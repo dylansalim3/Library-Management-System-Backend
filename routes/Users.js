@@ -1,10 +1,8 @@
 const express = require('express');
 const users = express.Router();
-// const cors = require('cors')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User');
-// users.use(cors());
 const db = require('../database/db.js');
 
 process.env.SECRET_KEY = 'secret_fyp';
@@ -45,25 +43,6 @@ users.post('/register', (req, res) => {
     });
 });
 
-users.post('/loginrole', (req, res) => {
-  db.sequelize
-    .query(
-      `SELECT users.* FROM users INNER JOIN user_role ON users.id = user_role.user_id
-                INNER JOIN role ON user_role.role_id = role.id
-                WHERE role.role = 'admin'`
-                ,
-      { type: db.sequelize.QueryTypes.SELECT }
-    )
-    .then((results) => {
-    //   res.send(JSON.parse(JSON.stringify(results)));
-      res.send(results);
-      console.log(results);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
-
 users.post('/loginwithrole', (req, res) => {
     console.log("request body role: "+req.body.role);
   db.sequelize
@@ -79,7 +58,17 @@ users.post('/loginwithrole', (req, res) => {
         console.log('user exists');
 
         if (bcrypt.compareSync(req.body.password, results[0].password)) {
-          let token = jwt.sign(results[0], process.env.SECRET_KEY);
+          // console.log("result is "+JSON.parse(results[0]));
+          // // JSON.stringify(result[0]).role="admin";
+          // let userData = JSON.parse(JSON.stringify(result[0]));
+          // console.log('result is ' + userData);
+
+          // results[0].push({role:"admin"});
+          let mydata = JSON.stringify(results[0]);
+          mydata = JSON.parse(mydata);
+          mydata['role'] = req.body.role;
+          console.log(JSON.stringify(mydata));
+          let token = jwt.sign(mydata, process.env.SECRET_KEY);
             console.log("Correct password");
             //check role
            db.sequelize
@@ -118,29 +107,5 @@ users.post('/loginwithrole', (req, res) => {
     });
 });
 
-users.post('/login', (req, res) => {
-  User.findOne({
-    where: {
-      email: req.body.email,
-    },
-  })
-    .then((user) => {
-      if (user) {
-        if (bcrypt.compareSync(req.body.password, user.password)) {
-          let token = jwt.sign(user.dataValues, process.env.SECRET_KEY, {
-            expiresIn: 120000, //in seconds, not used currently
-          });
-          res.send(token);
-        } else {
-          res.status(400).json({ error: 'Wrong password' });
-        }
-      } else {
-        res.status(400).json({ error: 'User does not exist' });
-      }
-    })
-    .catch((err) => {
-      res.status(400).json({ error: err });
-    });
-});
 
 module.exports = users;
