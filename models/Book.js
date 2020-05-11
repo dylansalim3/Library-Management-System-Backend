@@ -9,10 +9,40 @@ module.exports = db.sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    isbn: {
+      type: Sequelize.STRING,
+    },
     title: {
       type: Sequelize.STRING,
     },
+    datepublished: {
+      type: Sequelize.DATE,
+    },
+    publisher: {
+      type: Sequelize.STRING,
+    },
+    type: {
+      type: Sequelize.STRING,
+    },
+    e_book: {
+      type: Sequelize.STRING,
+    },
+    category_id: {
+      type: Sequelize.INTEGER,
+    },
+    genre_id: {
+      type: Sequelize.INTEGER,
+    },
+    location: {
+      type: Sequelize.STRING,
+    },
     bookimg: {
+      type: Sequelize.STRING,
+    },
+    summary: {
+      type: Sequelize.STRING,
+    },
+    status: {
       type: Sequelize.STRING,
     },
     created: {
