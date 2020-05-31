@@ -3,6 +3,15 @@ const books = express.Router();
 const Book = require('../models/Book');
 const db = require('../database/db.js');
 
+books.get('/get-all-books',(req,res)=>{
+  Book.findAll().then(books=>res.json(books));
+});
+
+books.get('/get-book/:book_id',(req,res)=>{
+  Book.findOne({id:req.params.book_id}).then((book)=>{
+    res.json(book);
+  });
+});
 
 books.post('/add', (req, res) => {
   const today = new Date();

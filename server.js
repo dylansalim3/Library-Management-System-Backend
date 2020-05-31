@@ -38,16 +38,41 @@ const upload = multer({
 
 var Users = require('./routes/Users');
 var Books = require('./routes/Books');
+var borrowBooks = require('./routes/BorrowBooks');
 
 app.use('/uploads',express.static('uploads'));
 app.use('/users',Users);
 app.use('/books',Books);
+app.use('/borrow-books',borrowBooks);
 
 app.post('/file', upload.single('file'), function (req, res, next) {
   const filepath = req.file.path;
 //   console.log(file.filename);
   res.send(filepath);
 });
+
+
+
+// const db = require('./database/db');
+const borrowBook = require('./models/BorrowBook');
+const book = require('./models/Book');
+const user = require('./models/User');
+const db = require('./database/db')
+borrowBook.belongsTo(book,{foreign_key:'book_id',constraint: true, OnDelete: 'CASCADE'});
+book.hasMany(borrowBook);
+borrowBook.belongsTo(user,{foreign_key:'user_id'});
+user.hasMany(borrowBook);
+
+// borrowBook.create({due_date:new Date().now, bookId:7,userId:1});
+
+db.sequelize.sync();
+//.then(()=>{
+//     return borrowBook.findOne(1);
+// }).then(borrowBook=>{
+//     if(!borrowBook){
+//         borrowBook.create()
+//     }
+// });
 
 app.listen(port, ()=> {
     console.log("Server is running on part: " + port)

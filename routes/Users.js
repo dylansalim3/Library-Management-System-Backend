@@ -7,6 +7,14 @@ const db = require('../database/db.js');
 
 process.env.SECRET_KEY = 'secret_fyp';
 
+users.get('/get-user/:user_id',(req,res)=>{
+  User.findOne({
+    id: req.params.user_id,
+  }).then(user=>{
+    res.json(user);
+  });
+})
+
 users.post('/register', (req, res) => {
   const today = new Date();
   const userData = {
