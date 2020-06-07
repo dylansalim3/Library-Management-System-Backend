@@ -23,7 +23,7 @@ books.post('/add', (req, res) => {
   };
   Book.create(data)
     .then((book) => {
-      res.json({ status: 'book added' });
+      res.json({ bookdetail:book,status: 'book added' });
     })
     .catch((err) => {
       res.send('error: ' + err);
