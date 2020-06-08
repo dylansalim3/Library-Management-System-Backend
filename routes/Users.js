@@ -23,6 +23,9 @@ users.post('/updateprofile',(req,res)=>{
         .query(
           `UPDATE users SET first_name = ${JSON.stringify(req.body.first_name)}
           ,last_name = ${JSON.stringify(req.body.last_name)}
+          ,profileimg = ${JSON.stringify(req.body.profileimg)}
+          ,address = ${JSON.stringify(req.body.address)}
+          ,phonenum = ${JSON.stringify(req.body.phonenum)}
           WHERE users.id =${JSON.stringify(req.body.userid)}
           `
         )

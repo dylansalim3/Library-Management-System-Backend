@@ -19,6 +19,7 @@ books.post('/add', (req, res) => {
     location: req.body.location,
     bookimg: req.body.bookimg,
     status: req.body.status,
+    author: req.body.author,
     created: today,
   };
   Book.create(data)
