@@ -45,7 +45,6 @@ app.use('/books',Books);
 
 app.post('/file', upload.single('file'), function (req, res, next) {
   const filepath = req.file.path;
-//   console.log(file.filename);
   res.send(filepath);
 });
 

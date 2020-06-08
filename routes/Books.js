@@ -19,11 +19,12 @@ books.post('/add', (req, res) => {
     location: req.body.location,
     bookimg: req.body.bookimg,
     status: req.body.status,
+    author: req.body.author,
     created: today,
   };
   Book.create(data)
     .then((book) => {
-      res.json({ status: 'book added' });
+      res.json({ bookdetail:book,status: 'book added' });
     })
     .catch((err) => {
       res.send('error: ' + err);
