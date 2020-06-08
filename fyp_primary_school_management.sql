@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: May 11, 2020 at 02:33 AM
+-- Generation Time: Jun 08, 2020 at 04:07 AM
 -- Server version: 8.0.20
 -- PHP Version: 7.3.11
 
@@ -50,15 +50,16 @@ CREATE TABLE `book` (
   `id` int NOT NULL,
   `isbn` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `title` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `author` varchar(255) NOT NULL,
   `datepublished` date NOT NULL,
   `publisher` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `type` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `e_book` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `category_id` int NOT NULL,
-  `genre_id` int DEFAULT NULL,
-  `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `genre_id` int NOT NULL,
+  `location` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `bookimg` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
-  `summary` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `summary` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `status` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
   `created` date NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
@@ -67,9 +68,8 @@ CREATE TABLE `book` (
 -- Dumping data for table `book`
 --
 
-INSERT INTO `book` (`id`, `isbn`, `title`, `datepublished`, `publisher`, `type`, `e_book`, `category_id`, `genre_id`, `location`, `bookimg`, `summary`, `status`, `created`) VALUES
-(7, 'ss', 'ss', '2020-05-01', 's2', 'physical', NULL, 2, 2, 'swq', 'uploads/1589162180832developmentprocess.jpg', 'sqwsq', 'available', '2020-05-11'),
-(8, 'isbn', 'book title', '2020-05-03', 'publisher name', 'physical', NULL, 3, 1, 'location 1', 'uploads/1589162366744Turquoise Monster Cute Desktop Wallpaper.png', 'this is the summary', 'available', '2020-05-11');
+INSERT INTO `book` (`id`, `isbn`, `title`, `author`, `datepublished`, `publisher`, `type`, `e_book`, `category_id`, `genre_id`, `location`, `bookimg`, `summary`, `status`, `created`) VALUES
+(56, '123-123', 'sample title', 'sample author', '2020-06-18', 'sample publisher', 'physical', NULL, 2, 2, 'blocka - rack 2', 'uploads/1591589110861bookcover.jpeg', 'sample summary', 'available', '2020-06-08');
 
 -- --------------------------------------------------------
 
@@ -82,13 +82,6 @@ CREATE TABLE `book_author` (
   `book_id` int NOT NULL,
   `author_id` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
---
--- Dumping data for table `book_author`
---
-
-INSERT INTO `book_author` (`id`, `book_id`, `author_id`) VALUES
-(1, 8, 2);
 
 -- --------------------------------------------------------
 
@@ -163,18 +156,21 @@ CREATE TABLE `users` (
   `first_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `last_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
   `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
-  `created` date DEFAULT NULL
+  `profileimg` varchar(255) DEFAULT NULL,
+  `created` date DEFAULT NULL,
+  `address` text,
+  `phonenum` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `email`, `first_name`, `last_name`, `password`, `created`) VALUES
-(1, 'test@test.com', 'test', 'test', '$2b$10$CCBx8P2WvLTxCiKCx1erX.f3cLF7CyTjq08S9LT58cmi1/8h.jVzG', '2020-05-01'),
-(2, 'q@q.com', 'q', 'q', '$2b$10$.6CbqF9o2Rfv8fycBgAv5ec3FvSg7/n3sfIviCPiurOZpoesRCUk2', '2020-05-02'),
-(3, 'yo@123.com', 'yo', 'yo', '$2b$10$OH3K0aEDcopTniBmJXQnduS.4GROmnV.vZCYFhBZygbHfldrMfp.q', '2020-05-02'),
-(5, 'teacher@teacher.com', 'teacher', 'teacher', '$2b$10$b.CmVt/0sbGtxzG2eMucvuWbQWI2Vho5ucwwUtP/Sy8n5E./rAGh.', '2020-05-05');
+INSERT INTO `users` (`id`, `email`, `first_name`, `last_name`, `password`, `profileimg`, `created`, `address`, `phonenum`) VALUES
+(1, 'test@test.com', 'Bruce', 'lee', '$2b$10$CCBx8P2WvLTxCiKCx1erX.f3cLF7CyTjq08S9LT58cmi1/8h.jVzG', 'uploads/1591588931077415851.jpg', '2020-05-01', 'jalan durian, taman durian ,\n14000,\npenang\nbukit mertajam', '011-123'),
+(2, 'q@q.com', 'firsta', 'q', '$2b$10$.6CbqF9o2Rfv8fycBgAv5ec3FvSg7/n3sfIviCPiurOZpoesRCUk2', NULL, '2020-05-02', NULL, NULL),
+(3, 'yo@123.com', 'firsta', 'yo', '$2b$10$OH3K0aEDcopTniBmJXQnduS.4GROmnV.vZCYFhBZygbHfldrMfp.q', NULL, '2020-05-02', NULL, NULL),
+(5, 'teacher@teacher.com', 'John', 'Ng', '$2b$10$b.CmVt/0sbGtxzG2eMucvuWbQWI2Vho5ucwwUtP/Sy8n5E./rAGh.', NULL, '2020-05-05', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -269,7 +265,7 @@ ALTER TABLE `author`
 -- AUTO_INCREMENT for table `book`
 --
 ALTER TABLE `book`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=57;
 
 --
 -- AUTO_INCREMENT for table `book_author`
