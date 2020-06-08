@@ -9,15 +9,18 @@ module.exports = db.sequelize.define(
             allowNull: false,
             autoIncrement: true,        
         },
-        // book_id:{
-        //     type: Sequelize.INTEGER       
-        // },
+        book_id:{
+            type: Sequelize.INTEGER       
+        },
+        start_date:{
+            type:Sequelize.DATE
+        },
         due_date:{
             type: Sequelize.DATE
         },
-        // user_id:{
-        //     type: Sequelize.INTEGER
-        // },
+        user_id:{
+            type: Sequelize.INTEGER
+        },
     },
     {
         timestamps: false,
