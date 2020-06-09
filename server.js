@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
 var multer = require('multer');
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './uploads/')
@@ -34,6 +35,8 @@ const upload = multer({
     },
     fileFilter: fileFilter
 })
+
+
 // var upload = multer({ dest: 'uploads/' });
 
 var Users = require('./routes/Users');
@@ -42,6 +45,7 @@ var BookDetails = require('./routes/BookDetails');
 var borrowBooks = require('./routes/BorrowBooks');
 var BorrowBooksHistory = require('./routes/BorrowBooksHistory');
 var Genres = require('./routes/Genres');
+var Roles = require('./routes/Roles');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -50,6 +54,8 @@ app.use('/book-details',BookDetails);
 app.use('/borrow-books', borrowBooks);
 app.use('/borrow-books-history',BorrowBooksHistory);
 app.use('/genres', Genres);
+app.use('/roles',Roles);
+
 
 app.post('/file', upload.single('file'), function (req, res, next) {
     const filepath = req.file.path;
@@ -167,3 +173,5 @@ db.sequelize.sync();
 app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
+
+module.exports = upload;

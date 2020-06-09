@@ -60,7 +60,7 @@ borrowBooksHistory.post('/get-book-history',async (req,res)=>{
             return {
                 id:result.id,
                 bookId:result.book_id,
-                bookimg:result.book.book_detail.bookimg,
+                bookimg:req.protocol + '://' + req.get('host')+'/'+result.book.book_detail.bookimg,
                 borrowDate:result.start_date,
                 dueDate:result.due_date,
                 returnDate:result.return_date,
