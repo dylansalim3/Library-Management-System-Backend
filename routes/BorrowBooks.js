@@ -7,17 +7,17 @@ const User = require('../models/User');
 const db = require('../database/db.js');
 const {checkUserExist} = require('../controller/UserController');
 
-borrowBooks.get('/get-all-borrow-books',(req,res)=>{
-    BorrowBook.findAll({include:[BookDetail]}).then(books=>{
-        res.json(books);
-    });
-});
+// borrowBooks.get('/get-all-borrow-books',(req,res)=>{
+//     BorrowBook.findAll({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}}).then(books=>{
+//         res.json(books);
+//     });
+// });
 
-borrowBooks.get('/get-borrow-book-by-book-id/:book_id',(req,res)=>{
-    BorrowBook.findAll({where:{bookId:req.params.book_id}}).then((borrowBook)=>{
-        res.json(borrowBook);
-    })
-});
+// borrowBooks.get('/get-borrow-book-by-book-id/:book_id',(req,res)=>{
+//     BorrowBook.findAll({where:{bookId:req.params.book_id}}).then((borrowBook)=>{
+//         res.json(borrowBook);
+//     })
+// });
 
 // borrowBooks.get('get-borrow-book/:book_id');
 
