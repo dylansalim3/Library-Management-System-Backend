@@ -16,7 +16,7 @@ books.post('/get-books',(req,res)=>{
 books.post('/add', async (req, res) => {
   const today = new Date();
   const author =  req.body.author;
-
+  const status = req.body.status;
   const data = {
     isbn: req.body.isbn,
     title: req.body.title,
@@ -32,29 +32,26 @@ books.post('/add', async (req, res) => {
     status: req.body.status,
     created: today,
   };
-
-  const authorId = await Author.findOrCreate({where:{name:author}}).then(author=>{
-    return author.id;
-  });
   db.sequelize.transaction(t=>{
-    return BookDetail.create(data,{transaction:t}).then(bookDetail=>{
-      const bookDetailId = bookDetail.id;
-      return BookAuthor.create({author_id:authorId,book_detail_id:bookDetailId},{transaction:t})
+    return Author.findOrCreate({where:{name:author},transaction:t}).spread((author,isCreated)=>{
+      console.log(author);
+      const authorId =  author.id;
+      return BookDetail.findOrCreate({where:data,transaction:t}).spread((bookDetail,isCreated)=>{
+        const bookDetailId = bookDetail.id;
+          return BookAuthor.findOrCreate({where:{author_id:authorId,book_detail_id:bookDetailId},transaction:t})
+          .spread((bookAuthor,isCreated)=>{
+            return Book.create({where:{status:status,book_detail_id:bookDetailId},transaction:t});
+          });
+    })
+          
     });
-  }).then(bookAuthors=>{
+  }).then((book)=>{
     data['author']=author;
+    data['id'] = book.id;
     res.json({bookdetail:data,status:'book added'})
   }).then(err=>{
     res.send(err);
   });
-
-  // Book.create(data)
-  //   .then((book) => {
-  //     res.json({ bookdetail:book,status: 'book added' });
-  //   })
-  //   .catch((err) => {
-  //     res.send('error: ' + err);
-  //   });
 });
 
 module.exports = books;
