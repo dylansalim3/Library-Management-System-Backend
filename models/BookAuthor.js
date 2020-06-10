@@ -9,6 +9,12 @@ module.exports = db.sequelize.define(
             primaryKey: true,
             autoIncrement: true
         },
+        author_id: {
+            type: Sequelize.INTEGER
+        },
+        book_detail_id:{
+            type: Sequelize.INTEGER
+        }
     },
     {
         timestamps: false,

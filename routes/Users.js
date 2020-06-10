@@ -20,6 +20,32 @@ users.get('/get-user/:user_id', (req, res) => {
     res.json(user);
   });
 })
+users.post('/profile',(req,res) =>{
+    db.sequelize.query(
+      `SELECT users.* FROM users WHERE users.id = ${JSON.stringify(
+        req.body.userid
+      )}`,
+      { type: db.sequelize.QueryTypes.SELECT }
+    ).then(result=>{
+      res.send({ userdata: result });
+    })
+})
+
+users.post('/updateprofile',(req,res)=>{
+      db.sequelize
+        .query(
+          `UPDATE users SET first_name = ${JSON.stringify(req.body.first_name)}
+          ,last_name = ${JSON.stringify(req.body.last_name)}
+          ,profileimg = ${JSON.stringify(req.body.profileimg)}
+          ,address = ${JSON.stringify(req.body.address)}
+          ,phonenum = ${JSON.stringify(req.body.phonenum)}
+          WHERE users.id =${JSON.stringify(req.body.userid)}
+          `
+        )
+        .then((result) => {
+          res.send({ result: result });
+        });
+})
 
 users.post('/register', (req, res) => {
   const today = new Date();
