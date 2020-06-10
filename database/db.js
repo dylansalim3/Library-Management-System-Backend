@@ -1,7 +1,8 @@
 const Sequelize = require("sequelize")
 const db = {}
-const sequelize = new Sequelize("fyp_primary_school_management","library_admin","password",{
+const sequelize = new Sequelize("fyp_primary_school_management","root","961015305003dD",{
     host: 'localhost',
+    port:'3300',
     dialect: 'mysql',
     operatorsAliases: false,
 
@@ -13,6 +14,11 @@ const sequelize = new Sequelize("fyp_primary_school_management","library_admin",
     }
 })
 
+// sequelize.authenticate().then(()=>{
+//     console.log("message here")
+// }).catch(err=>{
+//     console.log("error :"+err)
+// })
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
