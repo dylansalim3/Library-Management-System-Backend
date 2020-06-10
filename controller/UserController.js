@@ -42,7 +42,7 @@ const createUserByCsv = async(req,res) =>{
     var rowNum = 1;
 
     source = fs.createReadStream(file.path)
-      .pipe(csv())
+      .pipe(csv({skipComments:true}))
       .on('headers', headers => {
         const isCsvFormatCorrect = isArrayEquals(['email', 'role'], headers);
         if (!isCsvFormatCorrect) {
@@ -62,7 +62,7 @@ const createUserByCsv = async(req,res) =>{
         } else if (emails.includes(row['email'])) {
           errMessage.push('Duplication of emails at line ' + rowNum);
         }else if(!allowedRoles.includes(row['role'])){
-          console.log(allowedRoles,row['role']);
+          console.log(allowedRoles.toString(),row['role']);
           errMessage.push('Invalid roles assignment at line '+rowNum);
         }
         emails.push(row['email']);
@@ -80,17 +80,17 @@ const createUserByCsv = async(req,res) =>{
           res.status(400).json({ message: errMessage });
         } else {
 
-          mappedEmails = emails.map(email => {
-            const hashEmail = bcrypt.hashSync(email,10);
+          usersData = emails.map(email => {
+            const hashEmail = bcrypt.hashSync(email,10).replace('/','.');
             return { 'email': email, 'active':false, verification_hash:hashEmail };
           });
 
-          console.log("mappedEmails",mappedEmails);
+          console.log("usersData",usersData);
 
           db.sequelize.transaction(t => {
             var promises = [];
-            for (var i = 0; i < mappedEmails.length; i++) {
-              promises[i] = User.create(mappedEmails[i], { transaction: t });
+            for (var i = 0; i < usersData.length; i++) {
+              promises[i] = User.create(usersData[i], { transaction: t });
             }
             return Promise.all(promises).then(users => {
               var userRolePromises = [];
@@ -131,4 +131,58 @@ const createUserByCsv = async(req,res) =>{
   }
 }
 
-module.exports = {checkUserExist,checkUserExistByEmail,createUserByCsv}
+const createUser = (req,res) =>{
+  const today = new Date();
+  const roleId = req.body.role;
+  const allowedRoles = req.body.allowedRoles;
+  const email = req.body.email;
+  const registrationLinkPrefix = req.body.registrationLinkPrefix; 
+  
+  if(allowedRoles.includes(roleId)&&email){
+    const hashEmail = bcrypt.hashSync(email,10);
+    const userData = {
+      email: req.body.email,
+      verification_hash:hashEmail,
+      status:false,
+      created: today,
+    };
+    User.findOne({
+      where: {
+        email: req.body.email,
+      },
+    })
+      .then((user) => {
+        if (!user) {
+            db.sequelize.transaction(t => {
+              return User.create(userData, { transaction: t })
+                .then((user) => {
+                  return UserRole.create({ role_id: roleId, user_id: user.id }, { transaction: t }).then(userRole => {
+                    return user;
+                  });
+                });
+            }).then(userResult=>{
+                const verification_hash = userResult.verification_hash;
+                const registrationLink = registrationLinkPrefix+'/'+verification_hash;
+                const {subject,text} = buildVerificationEmail(email,registrationLink);
+                sendEmail(email,subject,text);
+
+                res.json({ status: userResult.email + ' registered' });
+
+            }).catch(function (err) {
+              console.log(err);
+              return res.status(400).json({message:'error: ' + err});
+            });
+        } else {
+          res.status(400).json({ message: ' User already exists' });
+        }
+      })
+      .catch((err) => {
+        res.status(400).json({message:'error: ' + err});
+      });
+  }else{
+    res.status(400).json({message:'Invalid role assignment'});
+  }
+ 
+}
+
+module.exports = {checkUserExist,checkUserExistByEmail,createUserByCsv,createUser}

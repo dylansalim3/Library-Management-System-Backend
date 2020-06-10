@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const UserRole = require('../models/UserRole');
 const Role = require('../models/Role');
-const { createUserByCsv } = require('../controller/UserController');
+const { createUserByCsv,createUser } = require('../controller/UserController');
 const {sendEmail} = require('../utils/emailUtils');
 
 process.env.SECRET_KEY = 'secret_fyp';
@@ -210,19 +210,66 @@ users.post('/register-user', upload.single('file'), async (req, res) => {
     }catch(err){
       console.log(err);
     }
+  }else if(email){
+    await createUser(req,res);
   }
 });
 
+users.post('/complete-registration',(req,res)=>{
+  const userId = req.body.userid;
+  const firstName = req.body.first_name;
+  const lastName = req.body.last_name;
+  const profileimg = req.body.profileimg;
+  const address = req.body.address;
+  const phonenum = req.body.phonenum;
+  const password = req.body.password;
+
+  const hashPassword = bcrypt.hashSync(password,10);
+
+  User.findOne({where:{id:userId}}).then(user=>{
+    user.first_name = firstName;
+    user.last_name = lastName;
+    user.profileimg = profileimg;
+    user.address = address;
+    user.phonenum = phonenum;
+    user.password = hashPassword;
+    user.active = true;
+    user.verification_hash = '';
+    return user.save();
+  }).then(result=>{
+    res.json(result);
+  }).catch(err=>{
+    res.status(400).json({message:err});
+  })
+
+})
+
 users.get('/get-registration-csv', (req, res) => {
-  const csvLink = req.protocol + '://' + req.get('host') + '/uploads/' + 'Format.csv';
+  var csvLink = req.protocol + '://' + req.get('host') ;
+
+  if(req.query.role==='teacher'){
+    csvLink += '/uploads/registration/teacher/' + 'Format.csv';
+  }else{
+    csvLink += '/uploads/registration/admin/' + 'Format.csv';
+  }
+  
   res.send(csvLink);
 })
 
 users.post('/get-user-by-verification-hash',(req,res)=>{
   const hash = req.body.hash;
-  // sendEmail('dylansalim003@gmail.com',)
-  User.findOne({include:[{model:Role}],where:{verification_hash:hash}}).then(user=>{
-    res.json(user);
+  User.findOne({where:{verification_hash:hash}}).then(user=>{
+    const userId=user.id;
+    // res.json(user);
+    UserRole.findOne({where:{user_id:userId}}).then(userRole=>{
+      const roleId = userRole.role_id;
+      Role.findOne({where:{id:roleId}}).then(role=>{
+        // const role = role.name;
+        res.json({user,role});
+      })
+    })
+  }).catch(err=>{
+    res.status(400).json({message:'User have been registered'});
   });
 })
 

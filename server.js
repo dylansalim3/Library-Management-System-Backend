@@ -93,8 +93,14 @@ bookDetail.belongsTo(genre, {foreignKey: 'genre_id'});
 genre.hasOne(bookDetail, {foreignKey: 'genre_id'});
 bookDetail.hasMany(author);
 author.belongsToMany(bookDetail, {through: bookAuthor});
-user.hasMany(role);
-role.belongsToMany(user, {through: userRole});
+
+userRole.associate = (models) => {
+    userRole.belongsTo(models.User, { foreignKey: 'user_id', targetKey: 'id'});
+    userRole.belongsTo(models.Role, { foreignKey: 'role_id', targetKey: 'id' });
+  }
+
+user.belongsToMany(role,{through:userRole,foreignKey:'role_id'});
+role.belongsToMany(user, {through:userRole,foreignKey:'user_id'});
 
 bookDetail.hasOne(category);
 category.belongsTo(bookDetail);
