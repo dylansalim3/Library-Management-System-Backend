@@ -27,9 +27,16 @@ borrowBooks.post('/add-borrow-book', async (req,res)=>{
     const bookId = req.body.bookId;
     const userId = req.body.userId;
     const userExist = await checkUserExist(userId);
+    const isBookAvailable = await Book.findOne({id:bookId}).then(book=>{
+        return book.status.toUpperCase() === 'AVAILABLE';
+    });
+    console.log(isBookAvailable);
     if(!userExist){
-        res.json("User does not exist")
+        res.status(400).json({message:"User does not exist"})
+    }else if(!isBookAvailable){
+        res.status(400).json({message:"Book is not available"})
     }else{
+        
         BorrowBook.count({user_id:userId}).then(count=>{
             if(count<3){
                 db.sequelize.transaction(function(t){
@@ -44,7 +51,7 @@ borrowBooks.post('/add-borrow-book', async (req,res)=>{
                     });
                 })
             }else{
-                res.json({err:"More than 3 books borrowed by this student"});
+                res.status(400).json({message:"More than 3 books borrowed by this student"});
             }
         });
     }        
