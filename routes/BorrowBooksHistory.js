@@ -9,13 +9,14 @@ const {checkUserExist} = require('../controller/UserController');
 
 borrowBooksHistory.post('/return-book', async (req, res) => {
     const bookId = req.body.bookId;
-    const isBookExist = await Book.count({where:{id:bookId}})<=0;
     const isBookBorrowed = await BorrowBook.count({where: {book_id: bookId} })<=0;
+    const selectedBorrowBook = await BorrowBook.findOne({ book_id: bookId });
+    const isBookExist = await Book.count({where:{id:bookId}})<=0;
 
     if(isBookExist){
         res.status(400).json({message:'The book is not exist'});
     }else if(isBookBorrowed){
-        res.status(400).json({message:'The book is not available'});
+        res.status(400).json({message:'The book is not borrowed'});
     }else{
         const {user_id,start_date,due_date} = selectedBorrowBook;
         const newBorrowBookHistoryEntry = {
