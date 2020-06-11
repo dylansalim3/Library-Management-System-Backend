@@ -9,12 +9,13 @@ const {checkUserExist} = require('../controller/UserController');
 
 borrowBooksHistory.post('/return-book', async (req, res) => {
     const bookId = req.body.bookId;
-    const selectedBorrowBook = await BorrowBook.findOne({ id: bookId }).then(borrowBook => {
-        return borrowBook;
-    });
-    console.log(selectedBorrowBook);
-    if(selectedBorrowBook==null){
-        res.json({err:'The book id does not exist'});
+    const isBookExist = await Book.count({where:{id:bookId}})<=0;
+    const isBookBorrowed = await BorrowBook.count({where: {book_id: bookId} })<=0;
+
+    if(isBookExist){
+        res.status(400).json({message:'The book is not exist'});
+    }else if(isBookBorrowed){
+        res.status(400).json({message:'The book is not available'});
     }else{
         const {user_id,start_date,due_date} = selectedBorrowBook;
         const newBorrowBookHistoryEntry = {
@@ -55,8 +56,10 @@ borrowBooksHistory.post('/get-book-history',async (req,res)=>{
         res.statusMessage = "User Does not Exist";
         res.status(404).end();
     }else{
-        const results = await BorrowBookHistory.findAll({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}}); 
-        const mappedResults = results.map(result=>{
+        const borrowBookHistoryResults = await BorrowBookHistory.findAll({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}}); 
+        const borrowBookResults = await BorrowBook.findAll({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}});
+        
+        const mappedBorrowBookHistoryResults = borrowBookHistoryResults.map(result=>{
             return {
                 id:result.id,
                 bookId:result.book_id,
@@ -67,7 +70,23 @@ borrowBooksHistory.post('/get-book-history',async (req,res)=>{
                 status:result.status,
             };
         });
-        res.json(mappedResults);
+
+        const mappedBorrowBookResults = borrowBookResults.map(result=>{
+            return {
+                id:result.id,
+                bookId:result.book_id,
+                bookimg:req.protocol + '://' + req.get('host')+'/'+result.book.book_detail.bookimg,
+                borrowDate:result.start_date,
+                dueDate:result.due_date,
+                returnDate:null,
+                status:'BORROWED',
+            };
+        });
+        const results = mappedBorrowBookHistoryResults.concat(mappedBorrowBookResults);
+        results.sort(function(a,b){
+            return a.due_date-b.due_date;
+        });
+        res.json(results);
     }    
 })
 

@@ -40,7 +40,7 @@ books.post('/add', async (req, res) => {
         const bookDetailId = bookDetail.id;
           return BookAuthor.findOrCreate({where:{author_id:authorId,book_detail_id:bookDetailId},transaction:t})
           .spread((bookAuthor,isCreated)=>{
-            return Book.create({where:{status:status,book_detail_id:bookDetailId},transaction:t});
+            return Book.create({status:status,book_detail_id:bookDetailId},{transaction:t});
           });
     })
           
