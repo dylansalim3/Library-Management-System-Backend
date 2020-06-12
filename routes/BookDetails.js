@@ -81,7 +81,7 @@ bookDetails.post('/get-book', (req, res) => {
 
 bookDetails.get('/get-latest-book', (req, res) => {
   BookDetail.findAll({ include: [Genre, Book, Author], limit: 3, order: [['datepublished', 'DESC']] }).map(book => {
-    if (book.authors > 0) {
+    if (book.authors.length > 0) {
       book['author'] = book.authors[0].name;
     }
     return book;
@@ -106,12 +106,10 @@ bookDetails.post('/update-book', async (req, res) => {
     publisher: req.body.publisher,
     location: req.body.location,
   };
-  var isAuthorExist = true;
   const authorId = await Author.findOne({ where: { name: authorName } }).then(author => {
     if (author) {
       return author.id;
     } else {
-      isAuthorExist = false;
       return Author.create({ name: authorName }).then(author => {
         return author.id;
       }).catch(err => {
@@ -119,20 +117,31 @@ bookDetails.post('/update-book', async (req, res) => {
       })
     }
   });
-  console.log(isAuthorExist);
+
+
+
   if (authorId) {
     db.sequelize.transaction(t => {
-      return BookDetail.update(bookDetailData, { where: { id: bookDetailId }, transaction: t }).then(bookDetail => {
-        
-        if (!isAuthorExist) {
-          return BookAuthor.create({ book_detail_id: bookDetailId, author_id:authorId }, { transaction: t }).then(bookAuthor => {
+      return BookDetail.findOne({ where: { id: bookDetailId }, transaction: t }).then(bookDetail => {
+        bookDetail.title = req.body.title;
+        bookDetail.isbn = req.body.isbn;
+        bookDetail.genre_id = req.body.genreId;
+        bookDetail.bookimg = req.body.bookimg;
+        bookDetail.summary = req.body.summary;
+        bookDetail.datepublished = req.body.datepublished;
+        bookDetail.publisher = req.body.publisher;
+        bookDetail.location = req.body.location;
+        bookDetail.save();
+        return BookAuthor.findOne({ where: { book_detail_id: bookDetailId }, transaction: t }).then(bookAuthor => {
+          console.log(bookAuthor.author_id, authorId);
+          if (bookAuthor && bookAuthor.author_id !== authorId) {
+            console.log('updateeee');
+            bookAuthor.author_id = authorId;
+            bookAuthor.save();
             return res.json('Book Detail Updated Successfully');
-          });
-        }else{
-          return BookAuthor.update({author_id:authorId},{where:{book_detail_id:bookDetailId},transaction:t}).then(()=>{
-            return res.json('Book Detail Updated Successfully');
-          });
-        }
+          }
+          return res.json('Book Detail Updated Successfully');
+        });
       });
     }).catch(err => {
       console.log(err);

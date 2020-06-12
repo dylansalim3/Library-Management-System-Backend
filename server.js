@@ -94,7 +94,7 @@ genre.hasOne(bookDetail, {foreignKey: 'genre_id'});
 bookDetail.belongsToMany(author,{through: bookAuthor,foreignKey:'author_id'});
 author.belongsToMany(bookDetail, {through: bookAuthor,foreign_key:'book_detail_id'});
 bookAuthor.associate = (models) => {
-    bookAuthor.belongsTo(models.bookDetail, { foreignKey: 'book_detail_id', targetKey: 'id'});
+    bookAuthor.belongsTo(models.BookDetail, { foreignKey: 'book_detail_id', targetKey: 'id'});
     bookAuthor.belongsTo(models.Author, { foreignKey: 'author_id', targetKey: 'id' });
   }
 
