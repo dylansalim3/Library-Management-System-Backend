@@ -4,6 +4,7 @@ const BookDetail = require('../models/BookDetail');
 const Book = require('../models/Book');
 const Genre = require('../models/Genre');
 const db = require('../database/db.js');
+const BorrowBookHistory = require('../models/BorrowBookHistory');
 
 bookDetails.get('/get-all-book-details', (req, res) => {
   BookDetail.findAll({ include: [Genre] }).then(books => res.json(books));
@@ -91,18 +92,28 @@ bookDetails.post('/update-book', (req, res) => {
   })
 });
 
-bookDetails.post('/delete-book', (req, res) => {
+bookDetails.post('/delete-book', async (req, res) => {
   const bookDetailId = req.body.id;
-  BookDetail.findOne({ where: { id: bookDetailId } }).then(bookDetail => {
-    if (bookDetail) {
-      bookDetail.destroy();
-      res.json('Book Detail Deleted Successfully')
-    } else {
-      res.status(400).json({ message: 'Book Detail Delete Failed' });
-    }
-  }).catch(err => {
+  const bookId = await Book.findOne({where:{book_detail_id:bookDetailId}}).then(book=>{return book.id});
+  db.sequelize.transaction(t=>{
+    return BorrowBookHistory.destroy({where:{book_id:bookId}}).then(BorrowBookHistory=>{
+      return Book.destroy({where:{book_detail_id:bookDetailId},transaction:t}).then(books=>{
+        return BookDetail.destroy({ where: { id: bookDetailId } ,transaction:t}).then(bookDetail => {
+          console.log(bookDetail);
+          if (bookDetail) {
+            res.json('Book Detail Deleted Successfully')
+          } else {
+            res.status(400).json({ message: 'Book Detail Delete Failed' });
+          }
+        });
+    });    
+    });
+  }).catch(err=>{
+    console.log(err);
     res.status(400).json({ message: 'Book Detail Delete Failed' });
   })
+  
+  
 })
 
 module.exports = bookDetails;
