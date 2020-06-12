@@ -4,18 +4,25 @@ const BookDetail = require('../models/BookDetail');
 const Book = require('../models/Book');
 const Genre = require('../models/Genre');
 const db = require('../database/db.js');
+const Author = require('./../models/Author');
 const BorrowBookHistory = require('../models/BorrowBookHistory');
+const BookAuthor = require('../models/BookAuthor');
 
 bookDetails.get('/get-all-book-details', (req, res) => {
   BookDetail.findAll({ include: [Genre] }).then(books => res.json(books));
 });
 
-bookDetails.post('/get-book-by-book-detail-id', (req, res) => {
-  const bookDetailId = req.body.id;
-  BookDetail.findOne({ include: [Genre], where: { id: bookDetailId } }).then(bookDetail => {
-    res.json(bookDetail);
-  });
-})
+// bookDetails.post('/get-book-by-book-detail-id', (req, res) => {
+//   const bookDetailId = req.body.id;
+//   BookDetail.findOne({ include: [Genre], where: { id: bookDetailId } }).map(book=>{
+//     // if(book.authors.length>0){
+//     //   book['author'] = book.authors[0].name;
+//     // }
+//     return book;
+//   }).then(bookDetail => {
+//     res.json(bookDetail);
+//   });
+// })
 
 bookDetails.post('/add', (req, res) => {
   const today = new Date();
@@ -62,34 +69,79 @@ bookDetails.post('/get-book', (req, res) => {
     a[searchCriteriaType] = searchCriteria;
   }
 
-  BookDetail.findAll({ include: [Genre, Book], where: a }).map(book => {
-    book['bookimg'] = req.protocol + '://' + req.get('host') + '/' + book['bookimg'];
+  BookDetail.findAll({ include: [Genre, Book, Author], where: a }).map(book => {
+    if (book.authors.length > 0) {
+      book['author'] = book.authors[0].name;
+    }
     return book;
   }).then(books => {
     res.json(books);
   })
 });
 
-bookDetails.post('/update-book', (req, res) => {
+bookDetails.get('/get-latest-book', (req, res) => {
+  BookDetail.findAll({ include: [Genre, Book, Author], limit: 3, order: [['datepublished', 'DESC']] }).map(book => {
+    if (book.authors > 0) {
+      book['author'] = book.authors[0].name;
+    }
+    return book;
+  }).then(bookDetails => {
+    res.json(bookDetails);
+  }).catch(err => {
+    res.status(400).json({ message: 'Latest book cannot retrieve' });
+  })
+});
+
+bookDetails.post('/update-book', async (req, res) => {
   const bookDetailId = req.body.id;
+  const authorName = req.body.author;
+
   const bookDetailData = {
     title: req.body.title,
     isbn: req.body.isbn,
     genre_id: req.body.genreId,
     bookimg: req.body.bookimg,
     summary: req.body.summary,
+    datepublished: req.body.datepublished,
+    publisher: req.body.publisher,
+    location: req.body.location,
   };
-  BookDetail.findOne({ where: { id: bookDetailId } }).then(bookDetail => {
-    bookDetail.title = bookDetailData.title;
-    bookDetail.isbn = bookDetailData.isbn;
-    bookDetail.genre_id = bookDetailData.genre_id;
-    bookDetail.bookimg = bookDetailData.bookimg;
-    bookDetail.summary = bookDetailData.summary;
-    bookDetail.save();
-    res.json('Book Detail Updated Successfully');
-  }).catch(err => {
-    res.status(400).json({ message: 'Book Detail Update Failed' })
-  })
+  var isAuthorExist = true;
+  const authorId = await Author.findOne({ where: { name: authorName } }).then(author => {
+    if (author) {
+      return author.id;
+    } else {
+      isAuthorExist = false;
+      return Author.create({ name: authorName }).then(author => {
+        return author.id;
+      }).catch(err => {
+        res.status(400).json({ message: 'Add New Author Failed' });
+      })
+    }
+  });
+  console.log(isAuthorExist);
+  if (authorId) {
+    db.sequelize.transaction(t => {
+      return BookDetail.update(bookDetailData, { where: { id: bookDetailId }, transaction: t }).then(bookDetail => {
+        
+        if (!isAuthorExist) {
+          return BookAuthor.create({ book_detail_id: bookDetailId, author_id:authorId }, { transaction: t }).then(bookAuthor => {
+            return res.json('Book Detail Updated Successfully');
+          });
+        }else{
+          return BookAuthor.update({author_id:authorId},{where:{book_detail_id:bookDetailId},transaction:t}).then(()=>{
+            return res.json('Book Detail Updated Successfully');
+          });
+        }
+      });
+    }).catch(err => {
+      console.log(err);
+      res.status(400).json({ message: 'Book Detail Update Failed' });
+    })
+  } else {
+    res.status(400).json({ message: 'Author not found and cannot be created' });
+  }
+
 });
 
 bookDetails.post('/delete-book', async (req, res) => {
