@@ -94,26 +94,31 @@ bookDetails.post('/update-book', (req, res) => {
 
 bookDetails.post('/delete-book', async (req, res) => {
   const bookDetailId = req.body.id;
-  const bookId = await Book.findOne({where:{book_detail_id:bookDetailId}}).then(book=>{return book.id});
-  db.sequelize.transaction(t=>{
-    return BorrowBookHistory.destroy({where:{book_id:bookId}}).then(BorrowBookHistory=>{
-      return Book.destroy({where:{book_detail_id:bookDetailId},transaction:t}).then(books=>{
-        return BookDetail.destroy({ where: { id: bookDetailId } ,transaction:t}).then(bookDetail => {
-          console.log(bookDetail);
-          if (bookDetail) {
-            res.json('Book Detail Deleted Successfully')
-          } else {
-            res.status(400).json({ message: 'Book Detail Delete Failed' });
-          }
-        });
-    });    
+  const bookId = await Book.findOne({ where: { book_detail_id: bookDetailId } }).then(book => {
+    if (book) {
+      return book.id;
+    }
+  });
+  db.sequelize.transaction(t => {
+    if (bookId) {
+      BorrowBookHistory.destroy({ where: { book_id: bookId }, transaction: t });
+    }
+    return Book.destroy({ where: { book_detail_id: bookDetailId }, transaction: t }).then(books => {
+      return BookDetail.destroy({ where: { id: bookDetailId }, transaction: t }).then(bookDetail => {
+        console.log(bookDetail);
+        if (bookDetail) {
+          res.json('Book Detail Deleted Successfully')
+        } else {
+          res.status(400).json({ message: 'Book Detail Delete Failed' });
+        }
+      });
     });
-  }).catch(err=>{
+  }).catch(err => {
     console.log(err);
     res.status(400).json({ message: 'Book Detail Delete Failed' });
   })
-  
-  
+
+
 })
 
 module.exports = bookDetails;
