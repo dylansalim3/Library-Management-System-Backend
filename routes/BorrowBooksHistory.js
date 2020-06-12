@@ -26,7 +26,6 @@ borrowBooksHistory.post('/return-book', async (req, res) => {
             status: "RETURNED",
             user_id: user_id,
             start_date:start_date,
-            due_date:due_date,
         }
     
     
