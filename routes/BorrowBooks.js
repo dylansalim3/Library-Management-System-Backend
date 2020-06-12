@@ -27,9 +27,10 @@ borrowBooks.post('/add-borrow-book', async (req,res)=>{
     const bookId = req.body.bookId;
     const userId = req.body.userId;
     const userExist = await checkUserExist(userId);
-    const isBookAvailable = await Book.findOne({id:bookId}).then(book=>{
+    const isBookAvailable = await Book.findOne({where:{id:bookId}}).then(book=>{
         return book.status.toUpperCase() === 'AVAILABLE';
     });
+
     console.log(isBookAvailable);
     if(!userExist){
         res.status(400).json({message:"User does not exist"})
