@@ -8,7 +8,7 @@ const db = require('../database/db.js');
 
 books.post('/get-books',(req,res)=>{
     const bookDetailId = req.body.bookDetailId;
-    Book.findAll({include:[{model:BookDetail,where:{id:bookDetailId}}]}).then(books=>{
+    Book.findAll({include:[{model:BookDetail,where:{id:{$like:bookDetailId}}}]}).then(books=>{
         res.json(books);
     })
 });
@@ -25,13 +25,16 @@ books.post('/add', async (req, res) => {
     type: req.body.type,
     e_book: req.body.ebook,
     category_id: req.body.category,
-    genre_id: req.body.genre,
+    // genre_id: req.body.genre,
     summary: req.body.summary,
     location: req.body.location,
     bookimg: req.body.bookimg,
     status: req.body.status,
     created: today,
   };
+  if(req.body.genre){
+    data['genre_id'] = req.body.genre;
+  }
   db.sequelize.transaction(t=>{
     return Author.findOrCreate({where:{name:author},transaction:t}).spread((author,isCreated)=>{
       console.log(author);
