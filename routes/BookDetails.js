@@ -72,15 +72,16 @@ bookDetails.post('/get-book', (req, res) => {
   }
   if (searchCriteria) {
     a[searchCriteriaType] = {[Sequelize.Op.like]:`%${req.body.searchCriteria}%`};
-  }
-  console.log(a);
-  
+  }  
 
-  BookDetail.findAll({ include: [Genre, Book, Author], where: (Sequelize.fn('lower',Sequelize.col(searchCriteriaType)),a) }).map(book => {
-    if (book.authors.length > 0) {
-      book['author'] = book.authors[0].name;
-    }
-    return book;
+  BookDetail.findAll({ include: [Genre, Book], where: (Sequelize.fn('lower',Sequelize.col(searchCriteriaType)),a) }).map(book => {
+    return BookAuthor.findOne({where:{book_detail_id:book.id}}).then(bookAuthor=>{
+      return Author.findOne({where:{id:bookAuthor.author_id}}).then(author=>{
+        book['author'] = author.name;
+        return book;
+      })
+    })  
+    
   }).then(books => {
     res.json(books);
   })

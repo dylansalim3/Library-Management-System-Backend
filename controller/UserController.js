@@ -142,7 +142,7 @@ const createUser = (req,res) =>{
     const hashEmail = bcrypt.hashSync(email,10);
     const userData = {
       email: req.body.email,
-      verification_hash:hashEmail,
+      verification_hash:hashEmail.replace('/','.'),
       status:false,
       created: today,
     };
