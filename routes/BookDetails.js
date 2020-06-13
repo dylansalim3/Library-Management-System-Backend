@@ -7,6 +7,7 @@ const db = require('../database/db.js');
 const Author = require('./../models/Author');
 const BorrowBookHistory = require('../models/BorrowBookHistory');
 const BookAuthor = require('../models/BookAuthor');
+const { Sequelize } = require('../database/db.js');
 
 bookDetails.get('/get-all-book-details', (req, res) => {
   BookDetail.findAll({ include: [Genre] }).then(books => res.json(books));
@@ -34,13 +35,17 @@ bookDetails.post('/add', (req, res) => {
     type: req.body.type,
     e_book: req.body.ebook,
     category_id: req.body.category,
-    genre_id: req.body.genre,
+    // genre_id: req.body.genre,
     summary: req.body.summary,
     location: req.body.location,
     bookimg: req.body.bookimg,
     status: req.body.status,
     created: today,
   };
+  console.log(req.body.genre);
+  if(req.body.genre!==''){
+    data['genre_id'] = req.body.genre;
+  }
   BookDetail.create(data)
     .then((book) => {
       res.json({ status: 'book added' });
@@ -58,7 +63,7 @@ bookDetails.post('/get-book-by-genre', (req, res) => {
 });
 
 bookDetails.post('/get-book', (req, res) => {
-  const searchCriteria = req.body.searchCriteria;
+  var searchCriteria = req.body.searchCriteria;
   const searchCriteriaType = req.body.searchCriteriaType;
   const genreId = req.body.genre;
   const a = {};
@@ -66,14 +71,17 @@ bookDetails.post('/get-book', (req, res) => {
     a['genre_id'] = genreId;
   }
   if (searchCriteria) {
-    a[searchCriteriaType] = searchCriteria;
-  }
+    a[searchCriteriaType] = {[Sequelize.Op.like]:`%${req.body.searchCriteria}%`};
+  }  
 
-  BookDetail.findAll({ include: [Genre, Book, Author], where: a }).map(book => {
-    if (book.authors.length > 0) {
-      book['author'] = book.authors[0].name;
-    }
-    return book;
+  BookDetail.findAll({ include: [Genre, Book], where: (Sequelize.fn('lower',Sequelize.col(searchCriteriaType)),a) }).map(book => {
+    return BookAuthor.findOne({where:{book_detail_id:book.id}}).then(bookAuthor=>{
+      return Author.findOne({where:{id:bookAuthor.author_id}}).then(author=>{
+        book['author'] = author.name;
+        return book;
+      })
+    })  
+    
   }).then(books => {
     res.json(books);
   })
