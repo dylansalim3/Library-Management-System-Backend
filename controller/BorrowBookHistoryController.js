@@ -1,16 +1,15 @@
-const BorrowBookHistory = require('../models/BorrowBookHistory');
-const BorrowBook = require('../models/BorrowBook');
 const Book = require('../models/Book');
 const BookDetail = require('../models/BookDetail');
 const db = require('../database/db');
 const UserRepository = require("../repository/UserRepository");
-const BorrowBookRepository = require("../repository/BorrowBookHistoryRepository");
+const BorrowBookRepository = require("../repository/BorrowBookRepository");
 const BookRepository = require("../repository/BookRepository");
+const BorrowBookHistoryRepository = require("../repository/BorrowBookHistoryRepository");
 
 exports.returnBook = async (req, res) => {
     const bookId = req.body.bookId;
-    const isBookBorrowed = await BorrowBookRepository.findBookHistoryCountByBookId(bookId)<=0;
-    const selectedBorrowBook = await BorrowBookRepository.findBookHistoryByBookId(bookId);
+    const isBookBorrowed = await BorrowBookHistoryRepository.findBookHistoryCountByBookId(bookId)<=0;
+    const selectedBorrowBook = await BorrowBookHistoryRepository.findBookHistoryByBookId(bookId);
     const isBookExist = await BookRepository.findBookCountById(bookId)<=0;
 
     if(isBookExist){
@@ -29,11 +28,11 @@ exports.returnBook = async (req, res) => {
         }
 
         db.sequelize.transaction(t => {
-            return BorrowBookHistory.create(newBorrowBookHistoryEntry, { transaction: t }).then(borrowBooksHistory => {
-                BorrowBook.findOne({ book_id: bookId }).then(borrowBook => {
+            return BorrowBookHistoryRepository.createBorrowBookHistory(newBorrowBookHistoryEntry, { transaction: t }).then(borrowBooksHistory => {
+                return BorrowBookRepository.findBorrowBookByBookId(bookId).then(borrowBook => {
                     return borrowBook.destroy();
                 }).then(() => {
-                    Book.findOne({ id: bookId }).then(book => {
+                    BookRepository.findBookById(bookId).then(book => {
                         book.status = 'AVAILABLE';
                         return book.save();
                     }).then(() => {
@@ -54,8 +53,8 @@ exports.getBookHistory = async (req,res)=>{
         res.statusMessage = "User Does not Exist";
         res.status(404).end();
     }else{
-        const borrowBookHistoryResults = await BorrowBookHistory.findAll({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}});
-        const borrowBookResults = await BorrowBook.findAll({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}});
+        const borrowBookHistoryResults = await BorrowBookHistoryRepository.findAllBorrowBookHistoryByUserId(userId);
+        const borrowBookResults = await BorrowBookRepository.findAllBorrowBook({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}});
 
         const mappedBorrowBookHistoryResults = borrowBookHistoryResults.map(result=>{
 

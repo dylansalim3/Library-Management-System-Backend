@@ -1,12 +1,9 @@
-const User = require('../models/User');
 const fs = require('fs');
 const csv = require('csv-parser');
 const db = require('../database/db.js');
-const UserRole = require('../models/UserRole');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const path = require('path');
-const Role = require('../models/Role');
 const UserRepository = require("../repository/UserRepository");
 const RoleRepository = require("../repository/RoleRepository");
 const {isArrayEquals} = require("../utils/array.util");
@@ -87,7 +84,7 @@ exports.loginWithRole = (req, res) => {
                     let token = jwt.sign(mydata, process.env.SECRET_KEY);
                     console.log("Correct password");
                     //check role
-                    UserRepository.findUserByEmailAndRole(req.body.email,req.body.role)
+                    UserRepository.findUserByEmailAndRole(req.body.email, req.body.role)
                         .then((results) => {
                             if (results) {
                                 res.send({token: token});
@@ -98,7 +95,7 @@ exports.loginWithRole = (req, res) => {
                         })
                         .catch((err) => {
                             console.log(err);
-                            res.status(400).json({error:"error is here"});
+                            res.status(400).json({error: "error is here"});
                         });
 
 
@@ -173,18 +170,15 @@ exports.getRegistrationCsv = (req, res) => {
 
 exports.getUserByVerificationHash = (req, res) => {
     const hash = req.body.hash;
-    User.findOne({where: {verification_hash: hash}}).then(user => {
-        const userId = user.id;
-        // res.json(user);
-        UserRole.findOne({where: {user_id: userId}}).then(userRole => {
-            const roleId = userRole.role_id;
-            Role.findOne({where: {id: roleId}}).then(role => {
-                // const role = role.name;
-                res.json({user, role});
-            })
-        })
+
+    UserRepository.findUserByVerificationHash(hash).then(user => {
+        const dto = {
+            "user": user,
+            "role": user.roles[0]
+        };
+        res.json(dto);
     }).catch(err => {
-        res.status(400).json({message: 'User have been registered'});
+        res.status(400).json({message: 'User have been registered', error: err.toString()});
     });
 }
 
@@ -199,7 +193,7 @@ const createUserByCsv = async (req, res) => {
         var errMessage = [];
         var rowNum = 1;
 
-        source = fs.createReadStream(file.path)
+        var source = fs.createReadStream(file.path)
             .pipe(csv({skipComments: true}))
             .on('headers', headers => {
                 const isCsvFormatCorrect = isArrayEquals(['email', 'role'], headers);
@@ -210,7 +204,7 @@ const createUserByCsv = async (req, res) => {
                     res.status(400).json({message: ['Allowed roles are empty']});
                     source.destroy();
                 } else if (registrationLinkPrefix === undefined) {
-                    res.status(400).json({message: ['Registration link prefix not found']});
+                    res.status(400).json({message: ['registration link prefix not found']});
                     source.destroy();
                 }
             })
@@ -228,65 +222,57 @@ const createUserByCsv = async (req, res) => {
                 rowNum += 1;
             })
             .on('end', async () => {
-                const existingUsers = (await User.findAll({where: {email: emails}}));
-                if (existingUsers.length > 0) {
-                    for (var i = 0; i < existingUsers.length; i++) {
-                        errMessage.push(existingUsers[i].email + ' user existed');
-                    }
-                }
-                if (errMessage.length > 0) {
-                    res.status(400).json({message: errMessage});
-                } else {
-
-                    usersData = emails.map(email => {
-                        const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
-                        return {'email': email, 'active': false, verification_hash: hashEmail};
-                    });
-
-                    console.log("usersData", usersData);
-
-                    db.sequelize.transaction(t => {
-                        var promises = [];
-                        for (var i = 0; i < usersData.length; i++) {
-                            promises[i] = User.create(usersData[i], {transaction: t});
+                    const existingUsers = (await UserRepository.findAllUserByEmail(emails));
+                    if (existingUsers.length > 0) {
+                        for (let i = 0; i < existingUsers.length; i++) {
+                            errMessage.push(existingUsers[i].email + ' user existed');
                         }
-                        return Promise.all(promises).then(users => {
-                            var userRolePromises = [];
-                            for (var i = 0; i < users.length; i++) {
-                                userRolePromises.push(UserRole.create({
-                                    user_id: users[i].id,
-                                    role_id: rows[users[i].email]
-                                }, {transaction: t}));
+                    }
+                    if (errMessage.length > 0) {
+                        res.status(400).json({message: errMessage});
+                    } else {
+                        var usersData = emails.map(email => {
+                            const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
+                            return {'email': email, 'active': false, verification_hash: hashEmail};
+                        });
+
+                        const t = await db.sequelize.transaction();
+                        const promises = [];
+                        for (let i = 0; i < usersData.length; i++) {
+                            promises[i] = UserRepository.createUser(usersData[i], {transaction: t});
+                        }
+                        Promise.all(promises).then(users => {
+                            const userRolePromises = [];
+                            for (let i = 0; i < users.length; i++) {
+                                userRolePromises.push(RoleRepository.findRoleById(rows[users[i].email]).then(role => {
+                                    users[i].addRole(role);
+                                    return users[i];
+                                }));
                             }
                             return Promise.all(userRolePromises);
-                        });
-                    }).then(function (result) {
-                        const addedUserId = result.map(userRole => {
-                            return userRole.user_id;
-                        })
-                        User.findAll({where: {id: addedUserId}}).then(users => {
+                        }).then(function (users) {
+                            let emailPromises = [];
+
                             users.forEach(user => {
                                 const email = user.email;
                                 const verification_hash = user.verification_hash;
                                 const registrationLink = registrationLinkPrefix + '/' + verification_hash;
                                 const {subject, text} = buildVerificationEmail(email, registrationLink);
-                                sendEmail(email, subject, text);
+                                emailPromises.push(sendEmail(email, subject, text, res));
                             });
-                        }).then(() => {
+
+                            return Promise.all(emailPromises);
+                        }).then((result) => {
+                            t.commit();
                             res.send(result);
-                        }).catch(err => {
+                        }).catch(function (err) {
+                            t.rollback();
                             console.log(err);
-                            res.status(400).json({message: 'Email to users operations failed'});
-                        })
-                    }).catch(function (err) {
-                        console.log(err);
-                        return res.send(err);
-                        // res.status(400).json({ message: errMessage });
-                    })
+                            return res.status(400).json({error: err.toString});
+                        });
+                    }
                 }
-
-
-            });
+            );
     } else {
         res.json('Wrong document format')
     }
@@ -313,16 +299,11 @@ const createUser = async (req, res) => {
             .then((user) => {
                 if (!user) {
                     UserRepository.createUser(userData)
-                            .then((user) => {
-                                user.setRole(role);
-
-                                // return UserRole.create({
-                                //     role_id: roleId,
-                                //     user_id: user.id
-                                // }, {transaction: t}).then(userRole => {
-                                //     return user;
-                                // });
-                    }).then(async (userResult) => {
+                        .then((user) => {
+                            user.addRole(role);
+                            return user;
+                        }).then(async (userResult) => {
+                        console.log(userResult);
                         const verification_hash = userResult.verification_hash;
                         const registrationLink = registrationLinkPrefix + '/' + verification_hash;
                         const {subject, text} = buildVerificationEmail(email, registrationLink);

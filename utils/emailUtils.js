@@ -3,39 +3,6 @@ const {emailCredential} = require('./../emailCredential.json');
 const env = process.env;
 const {google} = require('googleapis');
 
-// const sendEmail = (receiver,subject,html) => {
-//     var transporter =  nodemailer.createTransport({
-//         service: emailCredential.service,
-//         auth: {
-//           user: emailCredential.email,
-//           pass: emailCredential.password,
-//         }
-//       });
-//       var receiverEmail='';
-//       if(receiver.constructor === Array){
-//         for(var i=0;i<receiver.length;i++){
-//             receiverEmail+= "," + receiver[i];
-//         }
-//       }else{
-//           receiverEmail=receiver;
-//       }
-//
-//       var mailOptions = {
-//         from: emailCredential,
-//         to: receiverEmail,
-//         subject: subject,
-//         html: html,
-//       };
-//
-//       transporter.sendMail(mailOptions, function(error, info){
-//         if (error) {
-//           console.log(error);
-//         } else {
-//           console.log('Email sent: ' + info.response);
-//         }
-//       });
-// }
-
 const sendEmail = async (receiverEmail, emailSubject, html,res) => {
     const emailService = env.email_service;
     const senderEmail = env.sender_email;

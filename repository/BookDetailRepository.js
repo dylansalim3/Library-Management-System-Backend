@@ -34,4 +34,15 @@ exports.getThreeLatestBook = () => {
     });
 }
 
+exports.findBookDetailById = (bookDetailId, arguments) => {
+    return BookDetail.findOne({where: {id: bookDetailId}}, arguments);
+}
+
+exports.deleteBookDetailById = (bookDetailId, arguments) => {
+    return BookDetail.destroy({where: {id: bookDetailId}}, arguments)
+}
+
+exports.findOrCreateBookDetail = (bookDetailEntry, arguments) => {
+    return BookDetail.findOrCreate({where: bookDetailEntry, ...arguments});
+}
 

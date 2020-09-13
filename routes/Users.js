@@ -47,6 +47,6 @@ users.post('/complete-registration', UserController.completeRegistration);
 
 users.get('/get-registration-csv', UserController.getRegistrationCsv)
 
-users.post('/get-user-by-verification-hash', )
+users.post('/get-user-by-verification-hash', UserController.getUserByVerificationHash)
 
 module.exports = users;

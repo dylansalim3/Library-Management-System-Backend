@@ -1,10 +1,9 @@
-const BookDetail = require("../models/BookDetail");
-const BorrowBookHistory = require("../models/BorrowBookHistory");
-const Book = require("../models/Book");
 const BookRepository = require("../repository/BookRepository");
 
 const BookDetailRepository = require("../repository/BookDetailRepository");
 const AuthorRepository = require("../repository/AuthorRepository");
+const db = require("../database/db");
+const BorrowBookHistoryRepository = require("../repository/BorrowBookHistoryRepository");
 
 exports.getBook = (req, res) => {
     const searchCriteria = req.body.searchCriteria;
@@ -12,8 +11,8 @@ exports.getBook = (req, res) => {
     const genreId = req.body.genre;
     BookDetailRepository.getBookDetails(searchCriteria, searchCriteriaType, genreId).then(result => {
         res.json(result);
-    }).catch(err=>{
-        res.status(400).json({message: 'Error in getting the books',err:err.toString()});
+    }).catch(err => {
+        res.status(400).json({message: 'Error in getting the books', err: err.toString()});
     });
 }
 
@@ -25,6 +24,7 @@ exports.getLatestBook = (req, res) => {
     });
 }
 
+//haven tested
 exports.updateBookDetails = async (req, res) => {
     const bookDetailId = req.body.id;
     const authorName = req.body.author;
@@ -54,7 +54,7 @@ exports.updateBookDetails = async (req, res) => {
 
     if (author) {
         db.sequelize.transaction(t => {
-            return BookDetail.findOne({where: {id: bookDetailId}, transaction: t}).then(bookDetail => {
+            return BookDetailRepository.findBookDetailById(bookDetailId, {transaction: t}).then(bookDetail => {
                 bookDetail.title = req.body.title;
                 bookDetail.isbn = req.body.isbn;
                 bookDetail.genre_id = req.body.genreId;
@@ -77,7 +77,7 @@ exports.updateBookDetails = async (req, res) => {
                 //     return res.json('Book Detail Updated Successfully');
                 // });
             });
-        }).then(res=>{
+        }).then(res => {
             return res.json('Book Detail Updated Successfully');
         }).catch(err => {
             console.log(err);
@@ -91,17 +91,17 @@ exports.updateBookDetails = async (req, res) => {
 
 exports.deleteBook = async (req, res) => {
     const bookDetailId = req.body.id;
-    const bookId = await BookRepository.findBookByBookDetailId.then(book => {
+    const bookId = await BookRepository.findBookByBookDetailId(bookDetailId).then(book => {
         if (book) {
             return book.id;
         }
     });
     db.sequelize.transaction(t => {
         if (bookId) {
-            BorrowBookHistory.destroy({where: {book_id: bookId}, transaction: t});
+            BorrowBookHistoryRepository.deleteBookHistoryByBookId(bookId, {transaction: t});
         }
-        return Book.destroy({where: {book_detail_id: bookDetailId}, transaction: t}).then(books => {
-            return BookDetail.destroy({where: {id: bookDetailId}, transaction: t}).then(bookDetail => {
+        return BookRepository.deleteBookByBookDetailId(bookDetailId, {transaction: t}).then(books => {
+            return BookDetailRepository.deleteBookDetailById(bookDetailId, {transaction: t}).then(bookDetail => {
                 console.log(bookDetail);
                 if (bookDetail) {
                     res.json('Book Detail Deleted Successfully')

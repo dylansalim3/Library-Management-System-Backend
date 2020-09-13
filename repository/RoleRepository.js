@@ -10,5 +10,5 @@ exports.findRoleById = (id) =>{
 }
 
 exports.findRoleByRoleTypes = (roleTypes) =>{
-    return roles.findAll({where: {role: roleTypes}})
+    return Role.findAll({where: {role: roleTypes}})
 }

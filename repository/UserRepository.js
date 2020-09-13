@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Role = require('../models/Role');
 const db = require('../database/db.js');
 
 exports.findUserByEmail = (email) => {
@@ -9,8 +10,20 @@ exports.findUserByEmail = (email) => {
     });
 }
 
-exports.createUser = (userData) => {
-    return User.create(userData);
+exports.findAllUserByEmail = (emails) => {
+    return User.findAll({where: {email: emails}});
+}
+
+exports.findUserById = (id) => {
+    return User.findOne({where: {id: id}});
+}
+
+exports.findAllUserById = (idList) =>{
+    return User.findAll({where: {id: idList}});
+}
+
+exports.createUser = (userData, arguments) => {
+    return User.create(userData, arguments);
 }
 
 exports.updateUserProfile = (firstName, lastName, profileImg, address, phoneNum, userid) => {
@@ -26,9 +39,7 @@ exports.updateUserProfile = (firstName, lastName, profileImg, address, phoneNum,
         );
 }
 
-exports.findUserById = (id) => {
-    return User.findOne({where: {id: id}});
-}
+
 
 exports.findUserByEmailAndRole = (email, role) => {
     return db.sequelize
@@ -51,3 +62,8 @@ exports.checkUserExistByEmail = async (email) => {
     const userExist = await User.count({where: {email: email}});
     return userExist > 0;
 }
+
+exports.findUserByVerificationHash = (verificationHash) => {
+    return User.findOne({include: Role, where: {verification_hash: verificationHash}});
+}
+
