@@ -1,7 +1,7 @@
 # Sequelize Basics
 
 ## Create New Table 
-###Sample Code
+### Sample Code
 <pre><code>
 const Sequelize = require('sequelize')
 const db = require("../database/db.js")
