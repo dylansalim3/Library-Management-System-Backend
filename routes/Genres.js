@@ -1,12 +1,7 @@
 const express = require('express');
 const genres = express.Router();
-const Genre = require('../models/Genre');
-const db = require('../database/db.js');
+const GenreController = require("../controller/GenreController");
 
-genres.get('/get-all-genre',(req,res)=>{
-    Genre.findAll().then(genres=>{
-        res.json(genres);
-    });
-});
+genres.get('/get-all-genre',GenreController.getAllGenre);
 
 module.exports = genres;

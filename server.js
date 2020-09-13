@@ -2,11 +2,16 @@ var express = require("express");
 // var cors = require("cors");
 var bodyParser = require("body-parser");
 var app = express();
-var port = process.env.PORT || 5000;
+var port = 5000;
 
 app.use(bodyParser.json());
 // app.use(cors())
 app.use(bodyParser.urlencoded({extended: false}));
+
+if(process.env.NODE_ENV !== 'production'){
+    const dotenv = require('dotenv');
+    dotenv.config();
+}
 
 var multer = require('multer');
 
@@ -76,109 +81,35 @@ const role = require('./models/Role');
 const userRole = require('./models/UserRole');
 const category = require('./models/Category');
 const db = require('./database/db');
+
 book.belongsTo(bookDetail, {foriegnKey:'book_detail_id',constraint: true, OnDelete: 'CASCADE'});
 bookDetail.hasMany(book,{foriegnKey:'book_detail_id'});
 
 borrowBook.belongsTo(book, {foreignKey: 'book_id',constraint: true, OnDelete: 'CASCADE'});
 book.hasMany(borrowBook,{foreignKey: 'book_id'});
+
 borrowBook.belongsTo(user,{foreignKey: 'user_id',});
 user.hasMany(borrowBook,{foreignKey: 'user_id',});
 
 borrowBookHistory.belongsTo(book,{foreignKey:'book_id'});
 book.hasMany(borrowBookHistory,{foreignKey:'book_id'});
+
 borrowBookHistory.belongsTo(user,{foreignKey:'user_id'});
-book.hasMany(borrowBookHistory,{foreignKey:'user_id'});
+user.hasMany(borrowBookHistory,{foreignKey:'user_id'});
 
 bookDetail.belongsTo(genre, {foreignKey: 'genre_id'});
 genre.hasOne(bookDetail, {foreignKey: 'genre_id'});
-bookDetail.belongsToMany(author,{through: bookAuthor,foreignKey:'author_id'});
-author.belongsToMany(bookDetail, {through: bookAuthor,foreign_key:'book_detail_id'});
-bookAuthor.associate = (models) => {
-    bookAuthor.belongsTo(models.BookDetail, { foreignKey: 'book_detail_id', targetKey: 'id'});
-    bookAuthor.belongsTo(models.Author, { foreignKey: 'author_id', targetKey: 'id' });
-  }
 
-userRole.associate = (models) => {
-    userRole.belongsTo(models.User, { foreignKey: 'user_id', targetKey: 'id'});
-    userRole.belongsTo(models.Role, { foreignKey: 'role_id', targetKey: 'id' });
-  }
+bookDetail.belongsToMany(author,{through: "book_author",foreignKey:'book_detail_id'});
+author.belongsToMany(bookDetail, {through: "book_author",foreign_key:'author_id'});
 
-user.belongsToMany(role,{through:userRole,foreignKey:'role_id'});
-role.belongsToMany(user, {through:userRole,foreignKey:'user_id'});
+user.belongsToMany(role,{through:"user_role",foreignKey:'user_id'});
+role.belongsToMany(user, {through:"user_role",foreignKey:'role_id'});
 
 bookDetail.hasOne(category);
 category.belongsTo(bookDetail);
 
-
-
-// borrowBook.create({due_date:new Date().now, bookId:7,userId:1});
-
 db.sequelize.sync();
-//     .then(() => {
-//     return user.create({
-//         email: 'dylansalim015@gmail.com',
-//         first_name: 'dylan',
-//         last_name: 'salim',
-//         password: 'test123',
-//         role: [
-//             {
-//                 role: "student"
-//             }
-//         ]
-//     });
-// })
-//     .then(() => {
-//
-//     return bookDetail.bulkCreate([{
-//         isbn: 'ss',
-//         title: 'ss',
-//         publisher: 's2',
-//         type: 'PHYSICAL',
-//         e_book: null,
-//         category_id: 2,
-//         genre_id: 2,
-//         location: 'swq',
-//         bookimg: 'uploads/1589162180832developmentprocess.jpg',
-//         summary: 'this is summary',
-//         book:{
-//
-//         }
-//     },
-//         {
-//             isbn: 'isbn',
-//             title: 'book title',
-//             publisher: 'publisher name 1',
-//             type: 'PHYSICAL',
-//             e_book: null,
-//             category_id: 3,
-//             genre_id: 1,
-//             location: 'location 1',
-//             bookimg: 'uploads/1589162366744Turquoise Monster Cute Desktop Wallpaper.png',
-//             summary: 'this is summary'
-//         }]);
-
-// }).then(() => {
-//     return role.bulkCreate([{
-//         role: 'admin'
-//     },
-//         {
-//             role:'student'
-//         },
-//         {
-//             role:'librarian'
-//         },
-//         {
-//             role:'teacher'
-//         }
-//     ]);
-// });
-//.then(()=>{
-//     return borrowBook.findOne(1);
-// }).then(borrowBook=>{
-//     if(!borrowBook){
-//         borrowBook.create()
-//     }
-// });
 
 app.listen(port, () => {
     console.log("Server is running on part: " + port)

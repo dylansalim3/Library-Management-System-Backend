@@ -1,8 +1,8 @@
 const Sequelize = require("sequelize")
 const db = {}
-const sequelize = new Sequelize("fyp_primary_school_management","root","961015305003dD",{
+const sequelize = new Sequelize("fyp_primary_school_management","root","password",{
     host: 'localhost',
-    port:'3300',
+    port:'3306',
     dialect: 'mysql',
     operatorsAliases: false,
 
