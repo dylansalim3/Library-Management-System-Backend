@@ -1,6 +1,6 @@
 const RoleRepository = require("../repository/RoleRepository");
 exports.getAdminRoles = (req, res) => {
-    RoleRepository.findRoleByRoleTypes(['teacher', 'librarian']).then(roles => {
+    RoleRepository.findRoleByRoleTypes(['student','teacher', 'librarian']).then(roles => {
         const mappedRoles = roles.map(role => {
             return {
                 id: role.id,

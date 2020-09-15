@@ -31,7 +31,8 @@ const upload = multer({
     fileFilter: fileFilter
 });
 
-process.env.SECRET_KEY = 'secret_fyp';
+
+users.post('/admin/get-all-profile',UserController.adminGetAllProfile);
 
 users.post('/profile', UserController.getUserById);
 
@@ -45,8 +46,13 @@ users.post('/register-user', upload.single('file'), UserController.registerUserB
 
 users.post('/complete-registration', UserController.completeRegistration);
 
-users.get('/get-registration-csv', UserController.getRegistrationCsv)
+users.get('/get-registration-csv', UserController.getRegistrationCsv);
 
-users.post('/get-user-by-verification-hash', UserController.getUserByVerificationHash)
+users.post('/get-user-by-verification-hash', UserController.getUserByVerificationHash);
+
+users.post('/delete-user-role',UserController.removeUserRole);
+
+users.post('/add-user-role',UserController.addUserRole);
+
 
 module.exports = users;

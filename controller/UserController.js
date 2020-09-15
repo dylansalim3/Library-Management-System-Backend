@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const UserRepository = require("../repository/UserRepository");
 const RoleRepository = require("../repository/RoleRepository");
+const {ModifiableRole} = require("../constant/AllowedModifiableRoles");
 const {isArrayEquals} = require("../utils/array.util");
 const {validateEmail} = require("../utils/emailUtils");
 const {buildVerificationEmail, sendEmail} = require('../utils/emailUtils');
@@ -69,6 +70,7 @@ exports.registerUser = async (req, res) => {
     }
 
 }
+process.env.SECRET_KEY = 'secret_fyp';
 
 exports.loginWithRole = (req, res) => {
     UserRepository.findUserByEmail(req.body.email)
@@ -182,6 +184,49 @@ exports.getUserByVerificationHash = (req, res) => {
     });
 }
 
+exports.adminGetAllProfile = (req, res) => {
+    UserRepository.findAllUserByRole(ModifiableRole.ADMIN).then(result => {
+        res.json(result);
+    }).catch(err => {
+        res.status(500).json({error: err.toString()});
+    })
+}
+
+exports.addUserRole = async (req, res) => {
+    const userId = req.body.userId;
+    const newRoleId = req.body.roleId;
+    const isRoleExisted = RoleRepository.findRoleById(newRoleId);
+    const isUserExisted = UserRepository.checkUserExist(userId);
+    if (!isUserExisted) {
+        res.status(400).json({error: "User not found"});
+    }
+    if (!isRoleExisted) {
+        res.status(400).json({error: "Role not found"});
+    }
+    UserRepository.addUserRole(userId, newRoleId).then(result => {
+        res.json({message: "success"});
+    }).catch(err => {
+        res.status(500).json({error: err.toString()});
+    })
+}
+
+exports.removeUserRole = (req, res) => {
+    const userId = req.body.userId;
+    const roleId = req.body.roleId;
+    const isRoleExisted = RoleRepository.findRoleById(roleId);
+    const isUserExisted = UserRepository.checkUserExist(userId);
+    if (!isUserExisted) {
+        res.status(400).json({error: "User not found"});
+    }
+    if (!isRoleExisted) {
+        res.status(400).json({error: "Role not found"});
+    }
+    UserRepository.removeUserRole(userId, roleId).then(result => {
+        res.json({message: "success"});
+    }).catch(res => {
+        res.status(500).json({error: "Role is not deleted"});
+    })
+}
 
 const createUserByCsv = async (req, res) => {
     const file = req.file;

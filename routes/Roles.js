@@ -5,6 +5,6 @@ const RoleController = require("../controller/RoleController");
 
 roles.get('/admin/get-roles', RoleController.getAdminRoles);
 
-roles.get('/teacher/get-roles', RoleController.getTeacherRoles)
+roles.get('/teacher/get-roles', RoleController.getTeacherRoles);
 
 module.exports = roles;
