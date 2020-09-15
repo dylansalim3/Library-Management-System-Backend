@@ -27,14 +27,14 @@ INSERT INTO `role` (`id`, `role`) VALUES
 (3, 'librarian'),
 (4, 'teacher');
 
-INSERT INTO `user_role` (`id`, `user_id`, `role_id`) VALUES
-(1, 1, 1),
-(2, 1, 2),
-(3, 2, 1),
-
 INSERT INTO `category` (`id`, `name`) VALUES
 (1, 'textbook'),
 (2, 'magazine'),
 (3, 'comic'),
 (4, 'article');
 
+
+-- INSERT INTO `user_role` (`id`, `user_id`, `role_id`) VALUES
+-- (1, 1, 1),
+-- (2, 1, 2),
+-- (3, 2, 1),

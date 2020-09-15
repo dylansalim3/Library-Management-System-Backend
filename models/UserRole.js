@@ -9,12 +9,12 @@ module.exports = db.sequelize.define(
             primaryKey: true,
             autoIncrement: true
         },
-        user_id: {
-            type: Sequelize.INTEGER
-        },
-        role_id: {
-            type: Sequelize.INTEGER
-        }
+        // user_id: {
+        //     type: Sequelize.INTEGER
+        // },
+        // role_id: {
+        //     type: Sequelize.INTEGER
+        // }
     },
     {
         timestamps: false,
