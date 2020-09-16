@@ -6,7 +6,7 @@ exports.getLibraryMaps = (req, res) => {
     LibraryMapRepository.findLibraryMaps().then(libraryMaps => {
         res.json(libraryMaps);
     }).catch(err => {
-        res.status(500).json({error: err.toString()});
+        res.status(500).json({ error: err.toString() });
     });
 }
 
@@ -28,9 +28,9 @@ exports.updateLibraryMap = (req, res) => {
         }
         libraryMap.image_url = file.path;
         libraryMap.save();
-        res.json({success: true});
+        res.json({ success: true });
     }).catch(err => {
-        res.status(500).json({error: err.toString()});
+        res.status(500).json({ error: err.toString() });
     });
 }
 
@@ -43,9 +43,9 @@ exports.deleteLibraryMap = async (req, res) => {
         console.log(err.toString());
     }
     LibraryMapRepository.deleteLibraryMapByPk(libraryMapPk).then(libraryMap => {
-            res.json({success: true});
-        }
+        res.json({ success: true });
+    }
     ).catch(err => {
-        res.status(500).json({error: err.toString()})
+        res.status(500).json({ error: err.toString() })
     })
 }

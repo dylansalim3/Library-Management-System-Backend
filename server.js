@@ -1,11 +1,11 @@
 var express = require("express");
-// var cors = require("cors");
+var cors = require("cors");
 var bodyParser = require("body-parser");
 var app = express();
 var port = 5000;
 
 app.use(bodyParser.json());
-// app.use(cors())
+app.use(cors({origin:"*",allowedHeaders:"Origin, X-Requested-With, Content-Type, Accept"}));
 app.use(bodyParser.urlencoded({extended: false}));
 
 if (process.env.NODE_ENV !== 'production') {
