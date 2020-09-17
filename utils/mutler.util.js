@@ -5,7 +5,7 @@ const libraryMapStorage = multer.diskStorage({
         cb(null, './uploads/library_map/')
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + file.originalname.replace(' ','-'));
+        cb(null, Date.now() + file.originalname.replace(' ', '-'));
     }
 })
 
@@ -26,4 +26,31 @@ exports.uploadImageFile = multer({
     fileFilter: imageFileFilter
 });
 
+const SQLStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './migrations/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, 'dump.sql');
+    }
+});
+
+const SQLMimeTypes = ['application/x-sql','application/sql' ,'text/sql', 'text/x-sql', 'text/plain'];
+
+const SQLFilter = (req, file, cb) => {
+    if (SQLMimeTypes.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        //rejects storing a file
+        cb(null, false);
+    }
+}
+
+exports.uploadSQLFile = multer({
+    storage: SQLStorage,
+    limits: {
+        fileSize: 1024 * 1024 * 10
+    },
+    fileFilter: SQLFilter
+})
 

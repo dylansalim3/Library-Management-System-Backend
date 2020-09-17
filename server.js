@@ -52,6 +52,7 @@ const BorrowBooksHistory = require('./routes/BorrowBooksHistory');
 const Genres = require('./routes/Genres');
 const Roles = require('./routes/Roles');
 const LibraryMaps = require('./routes/LibraryMaps');
+const BackupDatabase = require('./routes/BackupDatabase');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -62,6 +63,7 @@ app.use('/borrow-books-history', BorrowBooksHistory);
 app.use('/genres', Genres);
 app.use('/roles', Roles);
 app.use('/library-maps', LibraryMaps);
+app.use('/backup-database',BackupDatabase);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
@@ -110,7 +112,7 @@ role.belongsToMany(user, {through: "user_role", foreignKey: 'role_id'});
 bookDetail.hasOne(category);
 category.belongsTo(bookDetail);
 
-db.sequelize.sync();
+db.sequelize.sync({logging:false});
 
 app.listen(port, () => {
     console.log("Server is running on part: " + port)
