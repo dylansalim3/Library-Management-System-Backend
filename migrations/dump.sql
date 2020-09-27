@@ -7,21 +7,11 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 # ------------------------------------------------------------
-# SCHEMA DUMP FOR TABLE: SequelizeMeta
-# ------------------------------------------------------------
-
-CREATE TABLE IF NOT EXISTS `SequelizeMeta` (
-  `name` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`name`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;
-
-# ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: author
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `author` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
@@ -31,10 +21,10 @@ CREATE TABLE IF NOT EXISTS `author` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `book` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `status` varchar(255) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
-  `book_detail_id` int(11) DEFAULT NULL,
+  `book_detail_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `book_detail_id` (`book_detail_id`),
   CONSTRAINT `book_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE
@@ -47,9 +37,9 @@ CREATE TABLE IF NOT EXISTS `book` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `book_author` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `book_detail_id` int(11) DEFAULT NULL,
-  `author_id` int(11) DEFAULT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `book_detail_id` int DEFAULT NULL,
+  `author_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `book_author_authorId_book_detail_id_unique` (`book_detail_id`, `author_id`),
   KEY `author_id` (`author_id`),
@@ -62,15 +52,15 @@ CREATE TABLE IF NOT EXISTS `book_author` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `book_detail` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `isbn` varchar(255) DEFAULT NULL,
   `title` varchar(255) DEFAULT NULL,
   `datepublished` datetime DEFAULT NULL,
   `publisher` varchar(255) DEFAULT NULL,
   `type` varchar(255) DEFAULT NULL,
   `e_book` varchar(255) DEFAULT NULL,
-  `category_id` int(11) DEFAULT NULL,
-  `genre_id` int(11) DEFAULT NULL,
+  `category_id` int DEFAULT NULL,
+  `genre_id` int DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
   `bookimg` varchar(255) DEFAULT NULL,
   `summary` varchar(255) DEFAULT NULL,
@@ -79,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `book_detail` (
   `author` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `genre_id` (`genre_id`),
-  CONSTRAINT `book_detail_ibfk_1` FOREIGN KEY (`genre_id`) REFERENCES `genre` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+  CONSTRAINT `book_detail_ibfk_1` FOREIGN KEY (`genre_id`) REFERENCES `genre` (`id`) ON UPDATE CASCADE
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = latin1;
 
 # ------------------------------------------------------------
@@ -87,16 +77,16 @@ CREATE TABLE IF NOT EXISTS `book_detail` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `borrow_book` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `book_id` int(11) DEFAULT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `book_id` int DEFAULT NULL,
   `start_date` datetime DEFAULT NULL,
   `due_date` datetime DEFAULT NULL,
-  `user_id` int(11) DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `book_id` (`book_id`),
   KEY `user_id` (`user_id`),
-  CONSTRAINT `borrow_book_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
-  CONSTRAINT `borrow_book_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+  CONSTRAINT `borrow_book_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `borrow_book_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = latin1;
 
 # ------------------------------------------------------------
@@ -104,19 +94,19 @@ CREATE TABLE IF NOT EXISTS `borrow_book` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `borrow_book_history` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `book_id` int(11) DEFAULT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `book_id` int DEFAULT NULL,
   `start_date` datetime DEFAULT NULL,
   `due_date` datetime DEFAULT NULL,
   `return_date` datetime DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
-  `user_id` int(11) DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
   `overdue` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `book_id` (`book_id`),
   KEY `user_id` (`user_id`),
-  CONSTRAINT `borrow_book_history_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE,
-  CONSTRAINT `borrow_book_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE NO ACTION ON UPDATE CASCADE
+  CONSTRAINT `borrow_book_history_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `borrow_book_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = latin1;
 
 # ------------------------------------------------------------
@@ -124,9 +114,9 @@ CREATE TABLE IF NOT EXISTS `borrow_book_history` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `category` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
-  `book_detail_id` int(11) DEFAULT NULL,
+  `book_detail_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `book_detail_id` (`book_detail_id`),
   CONSTRAINT `category_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE
@@ -139,7 +129,7 @@ CREATE TABLE IF NOT EXISTS `category` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `genre` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
@@ -149,8 +139,8 @@ CREATE TABLE IF NOT EXISTS `genre` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `library_map` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `floor` int(11) DEFAULT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `floor` int DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
@@ -161,19 +151,29 @@ CREATE TABLE IF NOT EXISTS `library_map` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `role` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `role` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = latin1;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: sequelizemeta
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `sequelizemeta` (
+  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
+  PRIMARY KEY (`name`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: user_role
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `user_role` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_id` int(11) DEFAULT NULL,
-  `role_id` int(11) DEFAULT NULL,
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `role_id` int DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `user_role_role_id_user_id_unique` (`user_id`, `role_id`),
   KEY `role_id` (`role_id`),
@@ -186,7 +186,7 @@ CREATE TABLE IF NOT EXISTS `user_role` (
 # ------------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS `users` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `id` int NOT NULL AUTO_INCREMENT,
   `first_name` varchar(255) DEFAULT NULL,
   `last_name` varchar(255) DEFAULT NULL,
   `email` varchar(255) NOT NULL,
@@ -200,11 +200,6 @@ CREATE TABLE IF NOT EXISTS `users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
 ) ENGINE = InnoDB AUTO_INCREMENT = 26 DEFAULT CHARSET = latin1;
-
-# ------------------------------------------------------------
-# DATA DUMP FOR TABLE: SequelizeMeta
-# ------------------------------------------------------------
-
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: author
@@ -489,6 +484,11 @@ INSERT INTO
   `role` (`id`, `role`)
 VALUES
   (4, 'teacher');
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: sequelizemeta
+# ------------------------------------------------------------
+
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: user_role
