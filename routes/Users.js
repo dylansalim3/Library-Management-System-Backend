@@ -32,7 +32,7 @@ const upload = multer({
 });
 
 
-users.post('/admin/get-all-profile',UserController.adminGetAllProfile);
+users.post('/admin/get-all-profile', UserController.adminGetAllProfile);
 
 users.post('/profile', UserController.getUserById);
 
@@ -50,9 +50,11 @@ users.get('/get-registration-csv', UserController.getRegistrationCsv);
 
 users.post('/get-user-by-verification-hash', UserController.getUserByVerificationHash);
 
-users.post('/delete-user-role',UserController.removeUserRole);
+users.post('/delete-user-role', UserController.removeUserRole);
 
-users.post('/add-user-role',UserController.addUserRole);
+users.post('/add-user-role', UserController.addUserRole);
+
+users.post('/reset-password', UserController.sendForgetPasswordEmail);
 
 
 module.exports = users;
