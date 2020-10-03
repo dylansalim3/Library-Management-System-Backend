@@ -9,7 +9,7 @@ const RoleRepository = require("../repository/RoleRepository");
 const { ModifiableRole } = require("../constant/AllowedModifiableRoles");
 const { isArrayEquals } = require("../utils/array.util");
 const { validateEmail } = require("../utils/emailUtils");
-const { buildVerificationEmail, sendEmail } = require('../utils/emailUtils');
+const { buildResetPasswordEmail,buildVerificationEmail, sendEmail } = require('../utils/emailUtils');
 
 exports.getUserById = (req, res) => {
     UserRepository.findUserById(req.body.userid).then(result => {
@@ -230,7 +230,7 @@ exports.removeUserRole = (req, res) => {
 
 
 exports.sendForgetPasswordEmail = (req, res) => {
-    const {email} = req.body;
+    const {email,resetPasswordLinkPrefix} = req.body;
     const isUserExisted = UserRepository.checkUserExistByEmail(email);
     if(!isUserExisted){
         res.status(400).json({ error: "User not found" });
@@ -244,6 +244,14 @@ exports.sendForgetPasswordEmail = (req, res) => {
 
     const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
     
+    UserRepository.updateUserVerificationHashByEmail(email,hashEmail).then(async result=>{
+        const resetPasswordLink = resetPasswordLinkPrefix + '/' + hashEmail;
+        const { subject, text } = buildResetPasswordEmail(resetPasswordLink);
+        await sendEmail(email, subject, text, res);
+    }).catch(err=>{
+        console.log(err.toString);
+        res.status(500).json({error:"Error occurred. Please try again later"});
+    })
 
 }
 
