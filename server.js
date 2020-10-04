@@ -63,7 +63,7 @@ app.use('/genres', Genres);
 app.use('/roles', Roles);
 app.use('/library-maps', LibraryMaps);
 app.use('/backup-database', BackupDatabase);
-app.use('/subscription',Subscriptions);
+app.use('/subscription', Subscriptions);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {

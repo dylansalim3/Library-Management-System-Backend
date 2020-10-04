@@ -9,7 +9,7 @@ const RoleRepository = require("../repository/RoleRepository");
 const { ModifiableRole } = require("../constant/AllowedModifiableRoles");
 const { isArrayEquals } = require("../utils/array.util");
 const { validateEmail } = require("../utils/emailUtils");
-const { buildResetPasswordEmail,buildVerificationEmail, sendEmail } = require('../utils/emailUtils');
+const { buildResetPasswordEmail, buildVerificationEmail, sendEmail } = require('../utils/emailUtils');
 
 exports.getUserById = (req, res) => {
     UserRepository.findUserById(req.body.userid).then(result => {
@@ -230,28 +230,60 @@ exports.removeUserRole = (req, res) => {
 
 
 exports.sendForgetPasswordEmail = (req, res) => {
-    const {email,resetPasswordLinkPrefix} = req.body;
+    const { email, resetPasswordLinkPrefix } = req.body;
     const isUserExisted = UserRepository.checkUserExistByEmail(email);
-    if(!isUserExisted){
+    if (!isUserExisted) {
         res.status(400).json({ error: "User not found" });
     }
 
     const user = UserRepository.findAllUserByEmail(email);
 
-    if(user.verification_hash != null){
+    if (user.verification_hash != null) {
         res.status(400).json({ error: "User has registered. Please refer to your email to activate your account." });
     }
 
     const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
-    
-    UserRepository.updateUserVerificationHashByEmail(email,hashEmail).then(async result=>{
+
+    console.log('received email address : '+email);
+    UserRepository.updateUserVerificationHashByEmail(email, hashEmail).then(async result => {
         const resetPasswordLink = resetPasswordLinkPrefix + '/' + hashEmail;
         const { subject, text } = buildResetPasswordEmail(resetPasswordLink);
         await sendEmail(email, subject, text, res);
-    }).catch(err=>{
+        res.json({ message: "Email sent" });
+    }).catch(err => {
         console.log(err.toString);
-        res.status(500).json({error:"Error occurred. Please try again later"});
+        res.status(500).json({ error: "Error occurred. Please try again later" });
     })
+
+}
+
+exports.resetPassword = async (req, res) => {
+    const { email, verificationHash, newPassword } = req.body;
+    let isEmailEqual = false;
+    try {
+        const user = await UserRepository.findUserByVerificationHash(verificationHash);
+        isEmailEqual = user.email === email;
+    } catch (err) {
+        console.log(err.toString());
+        res.status(404).json({ error: "User does not exist" });
+    }
+    try {
+        if (isEmailEqual) {
+            const hashPassword = bcrypt.hashSync(newPassword, 10);
+            UserRepository.updatePasswordByEmail(email, hashPassword).then(result => {
+                res.json({ message: "Password updated successfully" });
+            })
+        } else {
+            res.status(404).json({ error: "Unauthorized access" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: "Error occurred. Please try again later." })
+    }
+
+
+
+
+
 
 }
 

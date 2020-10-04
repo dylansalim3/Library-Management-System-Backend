@@ -119,11 +119,20 @@ exports.removeUserRole = (userId, roleId) => {
 }
 
 exports.updateUserVerificationHashByEmail = (email, verification_hash) => {
-    return User.findOne({email:email}).then(user=>{
-        user.verification_hash = verification_hash;
+    return User.findOne(
+        { where: { email: email } }).then(user => {
+            user.verification_hash = verification_hash;
+            user.save();
+            return user;
+        });
+}
+
+exports.updatePasswordByEmail = (email, password) => {
+    return User.findOne( { where: { email: email } }).then(user => {
+        user.password = password;
+        user.verification_hash = null;
         user.save();
         return user;
     });
 }
-
 

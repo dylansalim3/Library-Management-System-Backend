@@ -37,16 +37,19 @@ exports.backupDatabase = (req, res) => {
 
 exports.restoreDatabase = (req, res) => {
     const file = req.file;
-    dumpSqlFile({ dumpToFile: './migrations/backup.sql' }).then(async result => {
+    dumpSqlFile({ dumpToFile: path.join('migrations','backup.sql').toString() }).then(async result => {
         await db.sequelize.dropAllSchemas().catch(err => {
             res.status(500).json({ error: "Error in dropping databases", message: err.toString() });
         });
-        importer.import(file.path).then(() => {
+        importer.import(path.join('migrations','dump.sql').toString()).then(() => {
             let files_imported = importer.getImported();
             res.json(`${files_imported.length} SQL file(s) imported.`);
         }).catch(async err => {
-            console.log('failed to restore db');
-            await importer.import(`${__dirname}/../migrations/backup.sql`).catch(err => {
+            console.log(err.toString);
+            await importer.import(path.join('migrations','backup.sql').toString()).then(result=>{
+                console.log("changes reverted");
+                res.status(500).json({error:"changes reverted"});
+            }).catch(err => {
                 res.status(500).json({ error: "Error in restoring restore old data", message: err.toString() });
             });
             res.status(500).json({ error: "Error in restoring database", message: err.toString() });

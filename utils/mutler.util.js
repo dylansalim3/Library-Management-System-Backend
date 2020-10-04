@@ -51,6 +51,6 @@ exports.uploadSQLFile = multer({
     limits: {
         fileSize: 1024 * 1024 * 10
     },
-    fileFilter: SQLFilter
+    // fileFilter: SQLFilter
 })
 

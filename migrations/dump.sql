@@ -291,8 +291,7 @@ INSERT INTO
     `bookimg`,
     `summary`,
     `status`,
-    `created`,
-    `author`
+    `created`
   )
 VALUES
   (
@@ -309,8 +308,7 @@ VALUES
     'uploads/1589162366744Turquoise Monster Cute Desktop Wallpaper.png',
     'this is the summary',
     'AVAILABLE',
-    '2020-05-11 00:00:00',
-    NULL
+    '2020-05-11 00:00:00'
   );
 INSERT INTO
   `book_detail` (
@@ -327,8 +325,7 @@ INSERT INTO
     `bookimg`,
     `summary`,
     `status`,
-    `created`,
-    `author`
+    `created`
   )
 VALUES
   (
@@ -345,8 +342,7 @@ VALUES
     NULL,
     'fsdvfdsvfdsvfdsvds',
     'available',
-    '2020-09-12 11:58:57',
-    NULL
+    '2020-09-12 11:58:57'
   );
 INSERT INTO
   `book_detail` (
@@ -363,8 +359,7 @@ INSERT INTO
     `bookimg`,
     `summary`,
     `status`,
-    `created`,
-    `author`
+    `created`
   )
 VALUES
   (
@@ -381,8 +376,7 @@ VALUES
     NULL,
     'fewfefewfw',
     'available',
-    '2020-09-13 14:38:00',
-    NULL
+    '2020-09-13 14:38:00'
   );
 
 # ------------------------------------------------------------

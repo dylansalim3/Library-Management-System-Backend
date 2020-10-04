@@ -54,7 +54,9 @@ users.post('/delete-user-role', UserController.removeUserRole);
 
 users.post('/add-user-role', UserController.addUserRole);
 
-users.post('/reset-password', UserController.sendForgetPasswordEmail);
+users.post('/password-recovery', UserController.sendForgetPasswordEmail);
+
+users.post('/reset-password',UserController.resetPassword);
 
 
 module.exports = users;

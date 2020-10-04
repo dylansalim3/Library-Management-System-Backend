@@ -72,7 +72,7 @@ const buildResetPasswordEmail = (resetPasswordLink) =>{
     <h2>Password Recovery</h2>
     <p>You recently requested password reset for account associated with this email.</p>
     <br>
-    <p>Click on the <b><a href="${resetPasswordLink}">link</a></b> to reset your password</p>
+    <p>Click on the <b><a href="http://${resetPasswordLink}">link</a></b> to reset your password</p>
     `;
     return {subject:subject,text:text};
 }
