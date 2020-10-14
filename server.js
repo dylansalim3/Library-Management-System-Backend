@@ -4,9 +4,14 @@ var bodyParser = require("body-parser");
 var app = express();
 var port = 5000;
 
+
 app.use(bodyParser.json());
-app.use(cors({ origin: "*", allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept" }));
+app.use(cors({
+    origin: "*",
+    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
+}));
 app.use(bodyParser.urlencoded({ extended: false }));
+
 
 if (process.env.NODE_ENV !== 'production') {
     const dotenv = require('dotenv');
@@ -52,6 +57,7 @@ const Roles = require('./routes/Roles');
 const LibraryMaps = require('./routes/LibraryMaps');
 const BackupDatabase = require('./routes/BackupDatabase');
 const Subscriptions = require('./routes/Subscriptions');
+const Notifications = require('./routes/Notifications');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -64,15 +70,13 @@ app.use('/roles', Roles);
 app.use('/library-maps', LibraryMaps);
 app.use('/backup-database', BackupDatabase);
 app.use('/subscription', Subscriptions);
+app.use('/notification', Notifications);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
     const filepath = req.file.path;
     res.send(filepath);
 });
-
-
-
 
 const borrowBook = require('./models/BorrowBook');
 const borrowBookHistory = require('./models/BorrowBookHistory');
@@ -85,7 +89,9 @@ const author = require('./models/Author');
 const role = require('./models/Role');
 const userRole = require('./models/UserRole');
 const category = require('./models/Category');
+const notification = require('./models/Notification');
 const db = require('./database/db');
+const notifications = require("./routes/Notifications");
 
 book.belongsTo(bookDetail, { foriegnKey: 'book_detail_id', constraint: true, OnDelete: 'CASCADE' });
 bookDetail.hasMany(book, { foriegnKey: 'book_detail_id' });
@@ -114,10 +120,14 @@ role.belongsToMany(user, { through: "user_role", foreignKey: 'role_id' });
 bookDetail.hasOne(category);
 category.belongsTo(bookDetail);
 
+notification.belongsTo(user, { foreignKey: 'user_id', });
+user.hasMany(notification, { foreignKey: 'user_id', });
+
 db.sequelize.sync({ logging: false });
 
-app.listen(port, () => {
+exports.server = app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
 
-module.exports = upload;
+const {startSocketServer} = require('./utils/socket.util');
+startSocketServer(this.server);

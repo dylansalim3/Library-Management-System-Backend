@@ -16,9 +16,7 @@ function createHash(input) {
 }
 
 exports.handlePushNotificationSubscription = (req, res) => {
-    console.log("handle push notification here ====");
     const subscriptionRequest = req.body;
-    console.log(req.body);
     const susbscriptionId = createHash(JSON.stringify(subscriptionRequest));
     subscriptions[susbscriptionId] = subscriptionRequest;
     res.status(201).json({ id: susbscriptionId });

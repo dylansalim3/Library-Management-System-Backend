@@ -52,5 +52,30 @@ exports.uploadSQLFile = multer({
         fileSize: 1024 * 1024 * 10
     },
     // fileFilter: SQLFilter
+});
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads/')
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + file.originalname);
+    }
 })
 
+const CsvFilter = (req, file, cb) => {
+    if (file.mimetype === 'application/vnd.ms-excel' || file.mimetype === 'text/csv') {
+        cb(null, true);
+    } else {
+        //rejects storing a file
+        cb(null, false);
+    }
+}
+
+exports.uploadCsvFile = multer({
+    storage: storage,
+    limits: {
+        fileSize: 1024 * 1024 * 5
+    },
+    fileFilter: CsvFilter
+});
