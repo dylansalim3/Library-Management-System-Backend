@@ -6,6 +6,8 @@ notifications.post('/send-notification',NotificationController.sendNotification)
 
 notifications.post('/get-notifications',NotificationController.getNotifications);
 
+notifications.post('/get-all-notifications',NotificationController.getAllNotifications);
+
 notifications.post('/get-unread-notification-count',NotificationController.getUnreadNotificationCount);
 
 notifications.post('/update-notification-to-read',NotificationController.updateNotificationToRead);

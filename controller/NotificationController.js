@@ -11,11 +11,19 @@ exports.sendNotification = (req, res) => {
 
 exports.getNotifications = (req, res) => {
     const { userId } = req.body;
-    NotificationRepository.getAllNotification(userId).then(result => {
+    NotificationRepository.getAllNotificationById(userId).then(result => {
         res.json(result);
     }).catch(err => {
         res.status(500).json({ err: err.toString() });
     })
+}
+
+exports.getAllNotifications = (req, res) => {
+    NotificationRepository.getAllNotifications().then(result=>{
+        res.json(result);
+    }).catch(err => {
+        res.status(500).json({ err: err.toString() });
+    });
 }
 
 exports.getUnreadNotificationCount = (req, res) => {
@@ -41,6 +49,6 @@ exports.deleteNotification = (req, res) => {
     NotificationRepository.deleteNotification(id).then(result => {
         res.json({ success: true });
     }).catch(err => {
-        res.status(500).json({ err: err.toString() });                      
+        res.status(500).json({ err: err.toString() });
     })
 }

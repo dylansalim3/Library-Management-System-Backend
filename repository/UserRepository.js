@@ -43,11 +43,7 @@ exports.findAllUserByRole = (modifiableRole) => {
         ]
     });
 }
-//     [
-//     ...allowedRoleName.map(roleName => {
-//         return Sequelize.where(Sequelize.fn('lower', Sequelize.col('role'), roleName),);
-//     })
-// ]
+
 exports.createUser = (userData, arguments) => {
     return User.create(userData, arguments);
 }
@@ -128,7 +124,7 @@ exports.updateUserVerificationHashByEmail = (email, verification_hash) => {
 }
 
 exports.updatePasswordByEmail = (email, password) => {
-    return User.findOne( { where: { email: email } }).then(user => {
+    return User.findOne({ where: { email: email } }).then(user => {
         user.password = password;
         user.verification_hash = null;
         user.save();
@@ -136,3 +132,10 @@ exports.updatePasswordByEmail = (email, password) => {
     });
 }
 
+exports.getStudentsCount = () => {
+    return User.count({ include: [{ model: Role }], where: { '$roles.role$': 'student' } });
+}
+
+exports.getTeacherCount = () => {
+    return User.count({ include: [{ model: Role }], where: { '$roles.role$': 'teacher' } });
+}

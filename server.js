@@ -58,6 +58,7 @@ const LibraryMaps = require('./routes/LibraryMaps');
 const BackupDatabase = require('./routes/BackupDatabase');
 const Subscriptions = require('./routes/Subscriptions');
 const Notifications = require('./routes/Notifications');
+const Dashboard = require('./routes/Dashboard');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -71,6 +72,7 @@ app.use('/library-maps', LibraryMaps);
 app.use('/backup-database', BackupDatabase);
 app.use('/subscription', Subscriptions);
 app.use('/notification', Notifications);
+app.use('/dashboard', Dashboard);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
@@ -129,5 +131,5 @@ exports.server = app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
 
-const {startSocketServer} = require('./utils/socket.util');
+const { startSocketServer } = require('./utils/socket.util');
 startSocketServer(this.server);

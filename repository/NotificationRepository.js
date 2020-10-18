@@ -11,22 +11,26 @@ exports.createNotification = ({ userId, title, desc, enablePush, priority, thumb
     });
 }
 
-exports.getAllNotification = (userId) => {
+exports.getAllNotificationById = (userId) => {
     return Notification.findAll({ where: { user_id: userId }, order: [['created', 'DESC']] });
+}
+
+exports.getAllNotifications = () => {
+    return Notification.findAll({ order: [['created', 'DESC']] });
 }
 
 exports.getUnreadNotificationCount = (userId) => {
     return Notification.count({ where: { user_id: userId, unread: true } });
 }
 
-exports.updateNotificationToRead = (id) =>{
-    return Notification.findOne({where:{id}}).then(notification=>{
+exports.updateNotificationToRead = (id) => {
+    return Notification.findOne({ where: { id } }).then(notification => {
         notification.unread = false;
         notification.save();
         return notification;
     });
 }
 
-exports.deleteNotification = (id) =>{
-    return Notification.destroy({where:{id}});
+exports.deleteNotification = (id) => {
+    return Notification.destroy({ where: { id } });
 }
