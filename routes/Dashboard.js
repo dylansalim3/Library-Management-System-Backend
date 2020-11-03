@@ -4,4 +4,6 @@ const DashboardController = require('./../controller/DashboardController');
 
 dashboards.post('/admin-dashboard',DashboardController.getAdminDashboardData);
 
+dashboards.post('/student-dashboard',DashboardController.getStudentDashboardData);
+
 module.exports = dashboards;

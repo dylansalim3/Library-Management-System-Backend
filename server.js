@@ -58,7 +58,9 @@ const LibraryMaps = require('./routes/LibraryMaps');
 const BackupDatabase = require('./routes/BackupDatabase');
 const Subscriptions = require('./routes/Subscriptions');
 const Notifications = require('./routes/Notifications');
+const Reports = require('./routes/Reports');
 const Dashboard = require('./routes/Dashboard');
+const BookRequests = require('./routes/BookRequests');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -72,7 +74,9 @@ app.use('/library-maps', LibraryMaps);
 app.use('/backup-database', BackupDatabase);
 app.use('/subscription', Subscriptions);
 app.use('/notification', Notifications);
+app.use('/report', Reports);
 app.use('/dashboard', Dashboard);
+app.use('/book-request', BookRequests);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
@@ -92,8 +96,8 @@ const role = require('./models/Role');
 const userRole = require('./models/UserRole');
 const category = require('./models/Category');
 const notification = require('./models/Notification');
+const bookRequest = require('./models/BookRequest');
 const db = require('./database/db');
-const notifications = require("./routes/Notifications");
 
 book.belongsTo(bookDetail, { foriegnKey: 'book_detail_id', constraint: true, OnDelete: 'CASCADE' });
 bookDetail.hasMany(book, { foriegnKey: 'book_detail_id' });
@@ -125,11 +129,17 @@ category.belongsTo(bookDetail);
 notification.belongsTo(user, { foreignKey: 'user_id', });
 user.hasMany(notification, { foreignKey: 'user_id', });
 
+bookRequest.belongsTo(user, { foreignKey: 'user_id' });
+user.hasMany(bookRequest, { foreignKey: 'user_id' });
+
+bookRequest.belongsTo(book, { foreignKey: 'book_id' });
+book.hasOne(bookRequest, { foreignKey: 'book_id' })
+
 db.sequelize.sync({ logging: false });
 
-exports.server = app.listen(port, () => {
+const server = app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
 
 const { startSocketServer } = require('./utils/socket.util');
-startSocketServer(this.server);
+startSocketServer(server);
