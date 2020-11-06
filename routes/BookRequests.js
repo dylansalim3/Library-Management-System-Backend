@@ -14,6 +14,20 @@ bookRequests.post('/accept-extend-book-request', BookRequestController.acceptExt
 
 bookRequests.post('/reject-extend-book-request', BookRequestController.rejectExtendBookRequest);
 
+bookRequests.post('/add-reserve-book-request',BookRequestController.createReserveBookRequest);
+
+bookRequests.post('/find-book-reservation-by-user-id',BookRequestController.findPendingBookReservationByUserId);
+
+bookRequests.post('/find-completed-book-reservation-by-user-id',BookRequestController.findCompletedBookReservationByUserId)
+
+bookRequests.post('/find-all-pending-book-reservations',BookRequestController.findAllPendingReserveBookRequest);
+
+bookRequests.post('/find-all-completed-book-reservations',BookRequestController.findAllCompletedReserveBookRequest);
+
+bookRequests.post('/accept-book-reservation-request',BookRequestController.acceptBookReservationRequest);
+
+bookRequests.post('/reject-book-reservation-request',BookRequestController.rejectBookReservationRequest);
+
 bookRequests.post('/remove-book-request', BookRequestController.removeBookRequest);
 
 module.exports = bookRequests;

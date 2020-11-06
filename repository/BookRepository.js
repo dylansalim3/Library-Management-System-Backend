@@ -7,17 +7,17 @@ exports.findBookByBookDetailId = (bookDetailId) => {
 
 exports.findAllAvailableBooksByBookDetailId = (bookDetailId) => {
     return Book.findAll({
-        where: 
+        where:
         {
             [Op.and]:
                 [{ book_detail_id: bookDetailId },
-                    Sequelize.where(
-                        Sequelize.fn('upper', Sequelize.col('status')),
-                        {
-                          [Op.eq]: 'AVAILABLE'
-                        }
-                      )
-            ]
+                Sequelize.where(
+                    Sequelize.fn('upper', Sequelize.col('status')),
+                    {
+                        [Op.eq]: 'AVAILABLE'
+                    }
+                )
+                ]
         }
     });
 }
@@ -39,4 +39,12 @@ exports.createBook = (bookEntry, arguments) => {
 
 exports.getBookCreatedCurrentMonthCount = () => {
     return Book.count({ where: (Sequelize.fn('month', Sequelize.col('start_date')), new Date().getMonth()) });
+}
+
+exports.updateBookStatus = (bookId, status) => {
+    return Book.findByPk(bookId).then(book => {
+        book.status = status;
+        book.save();
+        return book;
+    });
 }

@@ -2,6 +2,8 @@ const Book = require('../models/Book');
 const BookDetail = require('../models/BookDetail');
 const User = require('../models/User');
 const BookRequest = require('./../models/BookRequest');
+const { EXTEND, RESERVE, ACCEPTED, REJECTED, PROCESSING, BORROWED, UNAVAILABLE } = require('./../constant/constant');
+
 
 exports.createBookRequest = (bookRequest) => {
     return BookRequest.create(bookRequest);
@@ -16,11 +18,11 @@ exports.findBookRequestByBookId = (bookId, options) => {
 }
 
 exports.findAllExtendBookRequestByUserId = (userId) => {
-    return BookRequest.findAll({ where: { user_id: userId, type: 'EXTEND' } });
+    return BookRequest.findAll({ where: { user_id: userId, type: EXTEND } });
 }
 
 exports.findAllExtendBookRequestByUserIdAndBookId = (userId, bookId) => {
-    const queryCriteria = { type: 'EXTEND' };
+    const queryCriteria = { type: EXTEND };
     if (userId) {
         queryCriteria['user_id'] = userId;
     }
@@ -31,7 +33,7 @@ exports.findAllExtendBookRequestByUserIdAndBookId = (userId, bookId) => {
 }
 
 exports.findAllExtendBookRequest = () => {
-    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] },User], where: { type: 'EXTEND' } });
+    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] }, User], where: { type: EXTEND } });
 }
 
 exports.findBookRequestByPk = (pk) => {
@@ -45,4 +47,24 @@ exports.updateBookRequestStatus = (bookRequestId, status, reasonReject) => {
         bookRequest.save();
         return bookRequest;
     });
+}
+
+exports.findAllPendingBookReservationRequestByUserId = (userId) => {
+    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] }, User], where: { status: PROCESSING, type: RESERVE, user_id: userId } });
+}
+
+exports.findAllCompletedBookReservationRequestByUserId = (userId) => {
+    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] }, User], where: { status: [ACCEPTED, REJECTED], type: RESERVE, user_id: userId } });
+}
+
+exports.findAllPendingBookReservationRequest = () => {
+    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] }, User], where: { status: PROCESSING, type: RESERVE } });
+}
+
+exports.findAllCompletedBookReservationRequest = () => {
+    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] }, User], where: { status: [ACCEPTED, REJECTED], type: RESERVE } });
+}
+
+exports.removeBookRequest = (bookRequestId) => {
+    return BookRequest.destroy({ where: { id: bookRequestId } });
 }
