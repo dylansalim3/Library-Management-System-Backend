@@ -1,4 +1,3 @@
-const { Sequelize } = require('../database/db.js');
 const RoleRepository = require("./RoleRepository");
 const User = require('../models/User');
 const Role = require('../models/Role');
@@ -6,6 +5,7 @@ const db = require('../database/db.js');
 const { TeacherAllowedModifiableRole } = require("../constant/AllowedModifiableRoles");
 const { AdminAllowedModifiableRoleName } = require("../constant/AllowedModifiableRoles");
 const { ModifiableRole } = require("../constant/AllowedModifiableRoles");
+const { Op, Sequelize } = require("sequelize");
 
 exports.findUserByEmail = (email) => {
     return User.findOne({
@@ -138,4 +138,32 @@ exports.getStudentsCount = () => {
 
 exports.getTeacherCount = () => {
     return User.count({ include: [{ model: Role }], where: { '$roles.role$': 'teacher' } });
+}
+
+exports.getNewUserCount = (month, year) => {
+    const studentCountPromise = User.count({
+        include: [{ model: Role }], where: {
+            [Op.and]: [
+                { '$roles.role$': 'student' },
+                (Sequelize.fn('month', Sequelize.col('created')), month),
+                (Sequelize.fn('year', Sequelize.col('created')), year)
+            ]
+        }
+    });
+    const teacherCountPromise = User.count({
+        include: [{ model: Role }], where: {
+            [Op.and]: [
+                { '$roles.role$': 'teacher' },
+                (Sequelize.fn('month', Sequelize.col('created')), month),
+                (Sequelize.fn('year', Sequelize.col('created')), year)
+            ]
+        }
+    });
+    return { studentCountPromise, teacherCountPromise };
+}
+
+exports.getTotalUserCount = () => {
+    const studentCountPromise = User.count({ include: [{ model: Role }], where: { '$roles.role$': 'student' } });
+    const teacherCountPromise = User.count({ include: [{ model: Role }], where: { '$roles.role$': 'teacher' } });
+    return { studentCountPromise, teacherCountPromise };
 }

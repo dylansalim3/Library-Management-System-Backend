@@ -16,7 +16,11 @@ exports.createBorrowBookHistory = (newBorrowBookHistoryEntry, arguments) => {
     return BorrowBookHistory.create(newBorrowBookHistoryEntry, arguments);
 }
 
-exports.getCurrentMonthBorrowedBook = (userId) => {
+exports.getCurrentMonthBorrowedBook = () => {
+    return BorrowBookHistory.count({ where: (Sequelize.fn('month', Sequelize.col('start_date')), new Date().getMonth()) } );
+}
+
+exports.getCurrentMonthBorrowedBookByUserId = (userId) => {
     return BorrowBookHistory.count({ where: { [Op.and]: [{ user_id: userId }, Sequelize.fn('month', Sequelize.col('start_date')), new Date().getMonth()] } });
 }
 

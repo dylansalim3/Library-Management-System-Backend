@@ -13,3 +13,9 @@ exports.RESERVE = 'RESERVE';
 exports.ACCEPTED = 'ACCEPTED';
 exports.REJECTED = 'REJECTED';
 exports.PROCESSING = 'PROCESSING';
+
+// book report max scale
+exports.BORROWED_MAX = 80;
+exports.OVERDUE_MAX = 50;
+exports.ADDED_MAX = 50;
+exports.RENEWED_MAX = 50;

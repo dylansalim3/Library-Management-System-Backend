@@ -76,10 +76,12 @@ exports.createExtendBookRequest = async (req, res) => {
 
 exports.findAllExtendBookRequest = (req, res) => {
     BookRequestRepository.findAllExtendBookRequest().then(async bookRequests => {
-        const mappedBookRequests = await Promise.all(bookRequests.map(async bookRequest => {
+        const pendingBookRequests = [];
+        const completedBookRequests = [];
+        await Promise.all(bookRequests.map(async bookRequest => {
             const borrowBooks = await BorrowBookRepository.findAllBorrowBookByUserIdAndBookId(bookRequest.user.id, bookRequest.book_id);
             const isBorrowBookExist = borrowBooks.length > 0;
-            return {
+            const item = {
                 id: bookRequest.id,
                 borrowBookId: isBorrowBookExist ? borrowBooks[0].id : null,
                 bookId: bookRequest.book_id,
@@ -92,8 +94,13 @@ exports.findAllExtendBookRequest = (req, res) => {
                 startDate: isBorrowBookExist ? borrowBooks[0].start_date : null,
                 dueDate: isBorrowBookExist ? borrowBooks[0].due_date : null,
             };
+            if (item.status === PROCESSING) {
+                pendingBookRequests.push(item);
+            } else {
+                completedBookRequests.push(item);
+            }
         }));
-        res.json(mappedBookRequests);
+        res.json({ pendingBookRequests, completedBookRequests });
     }).catch(err => {
         res.status(500).json({ err: err.toString() });
     })

@@ -38,7 +38,7 @@ exports.getBorrowBookCount = (userId) => {
     return BorrowBook.count({ where: { user_id: userId } });
 }
 
-exports.getCurrentMonthBorrowedBook = (userId) => {
+exports.getCurrentMonthBorrowedBookByUserId = (userId) => {
     return BorrowBook.count({ where: { [Op.and]: [{ user_id: userId }, Sequelize.fn('month', Sequelize.col('start_date')), new Date().getMonth()] } });
 }
 

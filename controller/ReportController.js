@@ -1,18 +1,47 @@
 const path = require('path');
 const chartUtil = require('./../utils/chart.util');
+const UserRepository = require('./../repository/UserRepository');
+const BorrowBookRepository = require('./../repository/BorrowBookRepository');
+const BorrowBookHistoryRepository = require('./../repository/BorrowBookHistoryRepository');
+const { BORROWED_MAX, OVERDUE_MAX, ADDED_MAX, RENEWED_MAX } = require('./../constant/constant');
+const chart = require('highcharts-export-server/lib/chart');
 
-exports.getMonthlyReport = (req, res) => {
-    const { month, year } = req.body;
+exports.getMonthlyReport = async (req, res) => {
+    let { month, year } = req.body;
 
-    
+    if (month === undefined || month < 1 || month > 12) {
+        month = new Date().getMonth();
+    }
+    if (year === undefined || year < 2020) {
+        year = new Date().getFullYear;
+    }
 
-    const chartData = [{
-        name: 'Tokyo',
-        data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4],
-        color: '#800000'
-    }];
+    // createNewUserChart().then(result => {
+    //     createAllUserChart().then(result => {
+    //         res.json(result);
+    //     });
+    // });
 
-    const chartDetails = constructBarChartOptions(monthsArray, chartData, null, 'Rainfall (mm)');
+    await createNewUserChart();
+    // createAllUserChart().then(result=>{
+    //     res.json(result);
+    // })
+
+    // Promise.all([createNewUserChart(),createAllUserChart()]).then((result)=>{
+    //     res.json(result);
+    // })
+
+    // createNumberOfBorrowedBookChart();
+
+    // const chartData = [{
+    //     name: 'Tokyo',
+    //     data: [49.9, 71.5, 106.4, 129.2, 144.0, 176.0, 135.6, 148.5, 216.4, 194.1, 95.6, 54.4],
+    //     color: '#800000'
+    // }];
+
+    // const chartDetails = constructBarChartOptions(monthsArray, chartData,'title', null, 'Rainfall (mm)');
+
+
     // constructPieChartOptions([
     //     {
     //         name: "a",
@@ -27,12 +56,103 @@ exports.getMonthlyReport = (req, res) => {
     //         y: 50
     //     }
     // ]);
-    chartUtil.createChart(chartDetails, 'testPieChart.png', (response, err) => {
-        if (err) {
-            res.status(500).json({ err: err.toString() });
+
+
+    // chartUtil.createChart(chartDetails, 'testPieChart.png', (response, err) => {
+    //     if (err) {
+    //         res.status(500).json({ err: err.toString() });
+    //     }
+    //     if (res) {
+    //         res.json({ message: response });
+    //     }
+    // })
+}
+
+const createNewUserChart = async (month, year) => {
+
+    const { studentCountPromise, teacherCountPromise } = UserRepository.getNewUserCount(month, year);
+
+    const studentCount = await studentCountPromise;
+    const teacherCount = await teacherCountPromise;
+
+    const chartData = [
+        {
+            name: "Student",
+            y: studentCount,
+        },
+        {
+            name: "Teacher",
+            y: teacherCount,
         }
-        if (res) {
-            res.json({ message: response });
+    ];
+
+    const chartDetails = constructPieChartOptions(chartData, 'New Users');
+
+    console.log(chartDetails);
+
+    chartUtil.createChart(chartDetails, 'newUsers.png', (response, err) => {
+        if (err) {
+            throw Error(err.toString());
+        }
+        return { studentCount, teacherCount };
+    })
+
+    
+}
+
+const createAllUserChart = async () => {
+
+    const { studentCountPromise, teacherCountPromise } = UserRepository.getTotalUserCount();
+
+    const studentCount = await studentCountPromise;
+    const teacherCount = await teacherCountPromise;
+
+    const chartData = [
+        {
+            name: "Student",
+            y: studentCount,
+        },
+        {
+            name: "Teacher",
+            y: teacherCount,
+        }
+    ];
+
+    const chartDetails = constructPieChartOptions(chartData, 'Total Users');
+
+    chartUtil.createChart(chartDetails, 'totalUsers.png', (response, err) => {
+        if (err) {
+            throw Error(err.toString());
+        }
+        return { studentCount, teacherCount };
+    });
+
+    
+}
+
+const createNumberOfBorrowedBookChart = async (month, year) => {
+    const booksCurrentBorrowed = await BorrowBookRepository.getCurrentMonthBorrowedBookCount();
+    const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getCurrentMonthBorrowedBook();
+    const totalBookBorrowedCount = booksCurrentBorrowed + booksHistoryCurrentBorrowed;
+
+    const remainderCount = BORROWED_MAX - totalBookBorrowedCount > 0 ? BORROWED_MAX - totalBookBorrowedCount : 0;
+
+    const chartData = [
+        ['Number of Books Borrowed', totalBookBorrowedCount],
+        {
+            name: 'Other',
+            y: remainderCount,
+            dataLabels: {
+                enabled: false
+            }
+        }
+    ];
+
+    const chartDetails = constructSemiCircleChart(chartData, 'Number of Borrowed Books');
+
+    chartUtil.createChart(chartDetails, 'numOfBorrowedBooks.png', (response, err) => {
+        if (err) {
+            throw Error(err.toString());
         }
     })
 }
@@ -52,7 +172,7 @@ const monthsArray = [
     'Dec'
 ];
 
-const constructBarChartOptions = (categories, chartData, xAxisText, yAxisText) => {
+const constructBarChartOptions = (categories, chartData, titleText, xAxisText, yAxisText) => {
     return {
         type: "png",
         options: {
@@ -60,7 +180,7 @@ const constructBarChartOptions = (categories, chartData, xAxisText, yAxisText) =
                 type: 'column'
             },
             title: {
-                text: 'Monthly Average Rainfall'
+                text: titleText
             },
             subtitle: {
                 text: 'Source: WorldClimate.com'
@@ -70,7 +190,7 @@ const constructBarChartOptions = (categories, chartData, xAxisText, yAxisText) =
             },
             xAxis: {
                 categories: categories,
-                text:xAxisText
+                text: xAxisText
             },
             yAxis: {
                 min: 0,
@@ -91,7 +211,7 @@ const constructBarChartOptions = (categories, chartData, xAxisText, yAxisText) =
 
 
 
-const constructPieChartOptions = (chartData) => {
+const constructPieChartOptions = (chartData, titleText) => {
     return {
         type: "png",
         options: {
@@ -99,7 +219,7 @@ const constructPieChartOptions = (chartData) => {
                 type: "pie"
             },
             title: {
-                text: "Heading of Chart"
+                text: titleText
             },
             credits: {
                 enabled: false
@@ -117,6 +237,48 @@ const constructPieChartOptions = (chartData) => {
                     data: chartData
                 }
             ]
+        }
+    }
+}
+
+// 'Browser<br>shares<br>2017'
+const constructSemiCircleChart = (chartData, titleText) => {
+    return {
+        type: "png",
+        options: {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: 0,
+                plotShadow: false
+            },
+            title: {
+                text: titleText,
+                align: 'center',
+                verticalAlign: 'middle',
+                y: 60
+            },
+            plotOptions: {
+                pie: {
+                    dataLabels: {
+                        enabled: true,
+                        distance: -50,
+                        style: {
+                            fontWeight: 'bold',
+                            color: 'white'
+                        }
+                    },
+                    startAngle: -90,
+                    endAngle: 90,
+                    center: ['50%', '75%'],
+                    size: '110%'
+                }
+            },
+            series: [{
+                type: 'pie',
+                name: titleText,
+                innerSize: '50%',
+                data: chartData,
+            }]
         }
     }
 }
