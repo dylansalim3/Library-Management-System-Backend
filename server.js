@@ -1,17 +1,23 @@
 var express = require("express");
-// var cors = require("cors");
+var cors = require("cors");
 var bodyParser = require("body-parser");
 var app = express();
 var port = 5000;
 
-app.use(bodyParser.json());
-// app.use(cors())
-app.use(bodyParser.urlencoded({extended: false}));
 
-if(process.env.NODE_ENV !== 'production'){
+app.use(bodyParser.json());
+app.use(cors({
+    origin: "*",
+    allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
+}));
+app.use(bodyParser.urlencoded({ extended: false }));
+
+
+if (process.env.NODE_ENV !== 'production') {
     const dotenv = require('dotenv');
     dotenv.config();
 }
+
 
 var multer = require('multer');
 
@@ -41,32 +47,42 @@ const upload = multer({
     fileFilter: fileFilter
 })
 
-
-// var upload = multer({ dest: 'uploads/' });
-
-var Users = require('./routes/Users');
-var Books = require('./routes/Books');
-var BookDetails = require('./routes/BookDetails');
-var borrowBooks = require('./routes/BorrowBooks');
-var BorrowBooksHistory = require('./routes/BorrowBooksHistory');
-var Genres = require('./routes/Genres');
-var Roles = require('./routes/Roles');
+const Users = require('./routes/Users');
+const Books = require('./routes/Books');
+const BookDetails = require('./routes/BookDetails');
+const borrowBooks = require('./routes/BorrowBooks');
+const BorrowBooksHistory = require('./routes/BorrowBooksHistory');
+const Genres = require('./routes/Genres');
+const Roles = require('./routes/Roles');
+const LibraryMaps = require('./routes/LibraryMaps');
+const BackupDatabase = require('./routes/BackupDatabase');
+const Subscriptions = require('./routes/Subscriptions');
+const Notifications = require('./routes/Notifications');
+const Reports = require('./routes/Reports');
+const Dashboard = require('./routes/Dashboard');
+const BookRequests = require('./routes/BookRequests');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
 app.use('/books', Books);
-app.use('/book-details',BookDetails);
+app.use('/book-details', BookDetails);
 app.use('/borrow-books', borrowBooks);
-app.use('/borrow-books-history',BorrowBooksHistory);
+app.use('/borrow-books-history', BorrowBooksHistory);
 app.use('/genres', Genres);
-app.use('/roles',Roles);
+app.use('/roles', Roles);
+app.use('/library-maps', LibraryMaps);
+app.use('/backup-database', BackupDatabase);
+app.use('/subscription', Subscriptions);
+app.use('/notification', Notifications);
+app.use('/report', Reports);
+app.use('/dashboard', Dashboard);
+app.use('/book-request', BookRequests);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
     const filepath = req.file.path;
     res.send(filepath);
 });
-
 
 const borrowBook = require('./models/BorrowBook');
 const borrowBookHistory = require('./models/BorrowBookHistory');
@@ -79,39 +95,51 @@ const author = require('./models/Author');
 const role = require('./models/Role');
 const userRole = require('./models/UserRole');
 const category = require('./models/Category');
+const notification = require('./models/Notification');
+const bookRequest = require('./models/BookRequest');
 const db = require('./database/db');
 
-book.belongsTo(bookDetail, {foriegnKey:'book_detail_id',constraint: true, OnDelete: 'CASCADE'});
-bookDetail.hasMany(book,{foriegnKey:'book_detail_id'});
+book.belongsTo(bookDetail, { foriegnKey: 'book_detail_id', constraint: true, OnDelete: 'CASCADE' });
+bookDetail.hasMany(book, { foriegnKey: 'book_detail_id' });
 
-borrowBook.belongsTo(book, {foreignKey: 'book_id',constraint: true, OnDelete: 'CASCADE'});
-book.hasMany(borrowBook,{foreignKey: 'book_id'});
+borrowBook.belongsTo(book, { foreignKey: 'book_id', constraint: true, OnDelete: 'CASCADE' });
+book.hasMany(borrowBook, { foreignKey: 'book_id' });
 
-borrowBook.belongsTo(user,{foreignKey: 'user_id',});
-user.hasMany(borrowBook,{foreignKey: 'user_id',});
+borrowBook.belongsTo(user, { foreignKey: 'user_id', });
+user.hasMany(borrowBook, { foreignKey: 'user_id', });
 
-borrowBookHistory.belongsTo(book,{foreignKey:'book_id'});
-book.hasMany(borrowBookHistory,{foreignKey:'book_id'});
+borrowBookHistory.belongsTo(book, { foreignKey: 'book_id' });
+book.hasMany(borrowBookHistory, { foreignKey: 'book_id' });
 
-borrowBookHistory.belongsTo(user,{foreignKey:'user_id'});
-user.hasMany(borrowBookHistory,{foreignKey:'user_id'});
+borrowBookHistory.belongsTo(user, { foreignKey: 'user_id' });
+user.hasMany(borrowBookHistory, { foreignKey: 'user_id' });
 
-bookDetail.belongsTo(genre, {foreignKey: 'genre_id'});
-genre.hasOne(bookDetail, {foreignKey: 'genre_id'});
+bookDetail.belongsTo(genre, { foreignKey: 'genre_id' });
+genre.hasOne(bookDetail, { foreignKey: 'genre_id' });
 
-bookDetail.belongsToMany(author,{through: "book_author",foreignKey:'book_detail_id'});
-author.belongsToMany(bookDetail, {through: "book_author",foreign_key:'author_id'});
+bookDetail.belongsToMany(author, { through: "book_author", foreignKey: 'book_detail_id' });
+author.belongsToMany(bookDetail, { through: "book_author", foreign_key: 'author_id' });
 
-user.belongsToMany(role,{through:"user_role",foreignKey:'user_id'});
-role.belongsToMany(user, {through:"user_role",foreignKey:'role_id'});
+user.belongsToMany(role, { through: "user_role", foreignKey: 'user_id' });
+role.belongsToMany(user, { through: "user_role", foreignKey: 'role_id' });
 
 bookDetail.hasOne(category);
 category.belongsTo(bookDetail);
 
-db.sequelize.sync();
+notification.belongsTo(user, { foreignKey: 'user_id', });
+user.hasMany(notification, { foreignKey: 'user_id', });
 
-app.listen(port, () => {
+bookRequest.belongsTo(user, { foreignKey: 'user_id' });
+user.hasMany(bookRequest, { foreignKey: 'user_id' });
+
+bookRequest.belongsTo(book, { foreignKey: 'book_id' });
+book.hasOne(bookRequest, { foreignKey: 'book_id' })
+
+db.sequelize.sync({ logging: false });
+
+const server = app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
 
-module.exports = upload;
+const { startSocketServer } = require('./utils/socket.util');
+startSocketServer(server);

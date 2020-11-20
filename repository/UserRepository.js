@@ -1,11 +1,11 @@
-const {Sequelize} = require('../database/db.js');
 const RoleRepository = require("./RoleRepository");
 const User = require('../models/User');
 const Role = require('../models/Role');
 const db = require('../database/db.js');
-const {TeacherAllowedModifiableRole} = require("../constant/AllowedModifiableRoles");
-const {AdminAllowedModifiableRoleName} = require("../constant/AllowedModifiableRoles");
-const {ModifiableRole} = require("../constant/AllowedModifiableRoles");
+const { TeacherAllowedModifiableRole } = require("../constant/AllowedModifiableRoles");
+const { AdminAllowedModifiableRoleName } = require("../constant/AllowedModifiableRoles");
+const { ModifiableRole } = require("../constant/AllowedModifiableRoles");
+const { Op, Sequelize } = require("sequelize");
 
 exports.findUserByEmail = (email) => {
     return User.findOne({
@@ -16,15 +16,15 @@ exports.findUserByEmail = (email) => {
 }
 
 exports.findAllUserByEmail = (emails) => {
-    return User.findAll({where: {email: emails}});
+    return User.findAll({ where: { email: emails } });
 }
 
 exports.findUserById = (id) => {
-    return User.findOne({where: {id: id}});
+    return User.findOne({ where: { id: id } });
 }
 
 exports.findAllUserById = (idList) => {
-    return User.findAll({where: {id: idList}});
+    return User.findAll({ where: { id: idList } });
 }
 
 exports.findAllUserByRole = (modifiableRole) => {
@@ -43,11 +43,7 @@ exports.findAllUserByRole = (modifiableRole) => {
         ]
     });
 }
-//     [
-//     ...allowedRoleName.map(roleName => {
-//         return Sequelize.where(Sequelize.fn('lower', Sequelize.col('role'), roleName),);
-//     })
-// ]
+
 exports.createUser = (userData, arguments) => {
     return User.create(userData, arguments);
 }
@@ -74,31 +70,31 @@ exports.findUserByEmailAndRole = (email, role) => {
                 WHERE 
                 role.role = ${JSON.stringify(role)} 
                 AND users.email = ${JSON.stringify(email)}`,
-            {type: db.sequelize.QueryTypes.SELECT}
+            { type: db.sequelize.QueryTypes.SELECT }
         );
 }
 
 exports.checkUserExist = async (userId) => {
-    const userExist = await User.count({where: {id: userId}});
+    const userExist = await User.count({ where: { id: userId } });
     return userExist;
 }
 
 exports.checkUserExistByEmail = async (email) => {
-    const userExist = await User.count({where: {email: email}});
+    const userExist = await User.count({ where: { email: email } });
     return userExist > 0;
 }
 
 exports.findUserByVerificationHash = (verificationHash) => {
-    return User.findOne({include: Role, where: {verification_hash: verificationHash}});
+    return User.findOne({ include: Role, where: { verification_hash: verificationHash } });
 }
 
 exports.addUserRole = (userId, roleId) => {
-    return User.findOne({include: Role, where: {id: userId}}).then(user => {
+    return User.findOne({ include: Role, where: { id: userId } }).then(user => {
         const roleIndex = user.roles.findIndex(role => role.id === roleId);
-        if(roleIndex !== -1){
+        if (roleIndex !== -1) {
             throw Error("Role existed");
         }
-        RoleRepository.findRoleById(roleId).then(role=>{
+        RoleRepository.findRoleById(roleId).then(role => {
             user.addRole(role);
             user.save();
             return user;
@@ -107,7 +103,7 @@ exports.addUserRole = (userId, roleId) => {
 }
 
 exports.removeUserRole = (userId, roleId) => {
-    return User.findOne({include: Role, where: {id: userId}}).then(user => {
+    return User.findOne({ include: Role, where: { id: userId } }).then(user => {
         const roleIndex = user.roles.findIndex(role => role.id === roleId);
         if (roleIndex === -1) {
             throw Error("Role is not associated to the user");
@@ -116,7 +112,58 @@ exports.removeUserRole = (userId, roleId) => {
         user.save();
         return user;
     });
-
 }
 
+exports.updateUserVerificationHashByEmail = (email, verification_hash) => {
+    return User.findOne(
+        { where: { email: email } }).then(user => {
+            user.verification_hash = verification_hash;
+            user.save();
+            return user;
+        });
+}
 
+exports.updatePasswordByEmail = (email, password) => {
+    return User.findOne({ where: { email: email } }).then(user => {
+        user.password = password;
+        user.verification_hash = null;
+        user.save();
+        return user;
+    });
+}
+
+exports.getStudentsCount = () => {
+    return User.count({ include: [{ model: Role }], where: { '$roles.role$': 'student' } });
+}
+
+exports.getTeacherCount = () => {
+    return User.count({ include: [{ model: Role }], where: { '$roles.role$': 'teacher' } });
+}
+
+exports.getNewUserCount = (month, year) => {
+    const studentCountPromise = User.count({
+        include: [{ model: Role }], where: {
+            [Op.and]: [
+                { '$roles.role$': 'student' },
+                (Sequelize.fn('month', Sequelize.col('created')), month),
+                (Sequelize.fn('year', Sequelize.col('created')), year)
+            ]
+        }
+    });
+    const teacherCountPromise = User.count({
+        include: [{ model: Role }], where: {
+            [Op.and]: [
+                { '$roles.role$': 'teacher' },
+                (Sequelize.fn('month', Sequelize.col('created')), month),
+                (Sequelize.fn('year', Sequelize.col('created')), year)
+            ]
+        }
+    });
+    return { studentCountPromise, teacherCountPromise };
+}
+
+exports.getTotalUserCount = () => {
+    const studentCountPromise = User.count({ include: [{ model: Role }], where: { '$roles.role$': 'student' } });
+    const teacherCountPromise = User.count({ include: [{ model: Role }], where: { '$roles.role$': 'teacher' } });
+    return { studentCountPromise, teacherCountPromise };
+}

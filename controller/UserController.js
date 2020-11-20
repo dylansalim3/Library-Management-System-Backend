@@ -6,14 +6,14 @@ const bcrypt = require('bcrypt');
 const path = require('path');
 const UserRepository = require("../repository/UserRepository");
 const RoleRepository = require("../repository/RoleRepository");
-const {ModifiableRole} = require("../constant/AllowedModifiableRoles");
-const {isArrayEquals} = require("../utils/array.util");
-const {validateEmail} = require("../utils/emailUtils");
-const {buildVerificationEmail, sendEmail} = require('../utils/emailUtils');
+const { ModifiableRole } = require("../constant/AllowedModifiableRoles");
+const { isArrayEquals } = require("../utils/array.util");
+const { validateEmail } = require("../utils/emailUtils");
+const { buildResetPasswordEmail, buildVerificationEmail, sendEmail } = require('../utils/emailUtils');
 
 exports.getUserById = (req, res) => {
     UserRepository.findUserById(req.body.userid).then(result => {
-        res.send({userdata: result});
+        res.send({ userdata: result });
     });
 }
 
@@ -27,7 +27,7 @@ exports.updateUserProfile = (req, res) => {
 
     UserRepository.updateUserProfile(firstName, lastName, profileImg, address, phoneNum, userId)
         .then((result) => {
-            res.send({result: result});
+            res.send({ result: result });
         });
 }
 
@@ -53,13 +53,13 @@ exports.registerUser = async (req, res) => {
                         UserRepository.createUser(userData)
                             .then((user) => {
                                 user.addRole(selectedRole);
-                                res.json({status: user.email + ' registered'});
+                                res.json({ status: user.email + ' registered' });
                             }).catch(err => {
-                            res.status(500).json(`error: ${err.toString()}`)
-                        });
+                                res.status(500).json(`error: ${err.toString()}`)
+                            });
                     });
                 } else {
-                    res.status(400).json({error: ' User already exists'});
+                    res.status(400).json({ error: ' User already exists' });
                 }
             })
             .catch((err) => {
@@ -89,29 +89,29 @@ exports.loginWithRole = (req, res) => {
                     UserRepository.findUserByEmailAndRole(req.body.email, req.body.role)
                         .then((results) => {
                             if (results) {
-                                res.send({token: token});
+                                res.send({ token: token });
                             } else {
                                 console.log('Wrong role selected');
-                                res.status(400).json({error: 'Wrong role selected'});
+                                res.status(400).json({ error: 'Wrong role selected' });
                             }
                         })
                         .catch((err) => {
                             console.log(err);
-                            res.status(400).json({error: "error is here"});
+                            res.status(400).json({ error: "error is here" });
                         });
 
 
                 } else {
                     console.log('Wrong password');
-                    res.status(400).json({error: 'Wrong password'});
+                    res.status(400).json({ error: 'Wrong password' });
                 }
             } else {
                 console.log('user does not exist');
-                res.status(404).json({error: "User does not exist"})
+                res.status(404).json({ error: "User does not exist" })
             }
         })
         .catch((err) => {
-            res.status(400).json({error: err.toString()});
+            res.status(400).json({ error: err.toString() });
         });
 }
 
@@ -154,7 +154,7 @@ exports.completeRegistration = (req, res) => {
     }).then(result => {
         res.json(result);
     }).catch(err => {
-        res.status(400).json({message: err});
+        res.status(400).json({ message: err });
     })
 }
 
@@ -180,7 +180,7 @@ exports.getUserByVerificationHash = (req, res) => {
         };
         res.json(dto);
     }).catch(err => {
-        res.status(400).json({message: 'User have been registered', error: err.toString()});
+        res.status(400).json({ message: 'User have been registered', error: err.toString() });
     });
 }
 
@@ -188,7 +188,7 @@ exports.adminGetAllProfile = (req, res) => {
     UserRepository.findAllUserByRole(ModifiableRole.ADMIN).then(result => {
         res.json(result);
     }).catch(err => {
-        res.status(500).json({error: err.toString()});
+        res.status(500).json({ error: err.toString() });
     })
 }
 
@@ -198,15 +198,15 @@ exports.addUserRole = async (req, res) => {
     const isRoleExisted = RoleRepository.findRoleById(newRoleId);
     const isUserExisted = UserRepository.checkUserExist(userId);
     if (!isUserExisted) {
-        res.status(400).json({error: "User not found"});
+        res.status(400).json({ error: "User not found" });
     }
     if (!isRoleExisted) {
-        res.status(400).json({error: "Role not found"});
+        res.status(400).json({ error: "Role not found" });
     }
     UserRepository.addUserRole(userId, newRoleId).then(result => {
-        res.json({message: "success"});
+        res.json({ message: "success" });
     }).catch(err => {
-        res.status(500).json({error: err.toString()});
+        res.status(500).json({ error: err.toString() });
     })
 }
 
@@ -216,16 +216,75 @@ exports.removeUserRole = (req, res) => {
     const isRoleExisted = RoleRepository.findRoleById(roleId);
     const isUserExisted = UserRepository.checkUserExist(userId);
     if (!isUserExisted) {
-        res.status(400).json({error: "User not found"});
+        res.status(400).json({ error: "User not found" });
     }
     if (!isRoleExisted) {
-        res.status(400).json({error: "Role not found"});
+        res.status(400).json({ error: "Role not found" });
     }
     UserRepository.removeUserRole(userId, roleId).then(result => {
-        res.json({message: "success"});
+        res.json({ message: "success" });
     }).catch(res => {
-        res.status(500).json({error: "Role is not deleted"});
+        res.status(500).json({ error: "Role is not deleted" });
     })
+}
+
+
+exports.sendForgetPasswordEmail = (req, res) => {
+    const { email, resetPasswordLinkPrefix } = req.body;
+    const isUserExisted = UserRepository.checkUserExistByEmail(email);
+    if (!isUserExisted) {
+        res.status(400).json({ error: "User not found" });
+    }
+
+    const user = UserRepository.findAllUserByEmail(email);
+
+    if (user.verification_hash != null) {
+        res.status(400).json({ error: "User has registered. Please refer to your email to activate your account." });
+    }
+
+    const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
+
+    console.log('received email address : '+email);
+    UserRepository.updateUserVerificationHashByEmail(email, hashEmail).then(async result => {
+        const resetPasswordLink = resetPasswordLinkPrefix + '/' + hashEmail;
+        const { subject, text } = buildResetPasswordEmail(resetPasswordLink);
+        await sendEmail(email, subject, text, res);
+        res.json({ message: "Email sent" });
+    }).catch(err => {
+        console.log(err.toString);
+        res.status(500).json({ error: "Error occurred. Please try again later" });
+    })
+
+}
+
+exports.resetPassword = async (req, res) => {
+    const { email, verificationHash, newPassword } = req.body;
+    let isEmailEqual = false;
+    try {
+        const user = await UserRepository.findUserByVerificationHash(verificationHash);
+        isEmailEqual = user.email === email;
+    } catch (err) {
+        console.log(err.toString());
+        res.status(404).json({ error: "User does not exist" });
+    }
+    try {
+        if (isEmailEqual) {
+            const hashPassword = bcrypt.hashSync(newPassword, 10);
+            UserRepository.updatePasswordByEmail(email, hashPassword).then(result => {
+                res.json({ message: "Password updated successfully" });
+            })
+        } else {
+            res.status(404).json({ error: "Unauthorized access" });
+        }
+    } catch (err) {
+        res.status(500).json({ error: "Error occurred. Please try again later." })
+    }
+
+
+
+
+
+
 }
 
 const createUserByCsv = async (req, res) => {
@@ -239,17 +298,17 @@ const createUserByCsv = async (req, res) => {
         var rowNum = 1;
 
         var source = fs.createReadStream(file.path)
-            .pipe(csv({skipComments: true}))
+            .pipe(csv({ skipComments: true }))
             .on('headers', headers => {
                 const isCsvFormatCorrect = isArrayEquals(['email', 'role'], headers);
                 if (!isCsvFormatCorrect) {
-                    res.status(400).json({message: ['The csv is in incorrect format']});
+                    res.status(400).json({ message: ['The csv is in incorrect format'] });
                     source.destroy();
                 } else if (allowedRoles === undefined || allowedRoles.length === 0) {
-                    res.status(400).json({message: ['Allowed roles are empty']});
+                    res.status(400).json({ message: ['Allowed roles are empty'] });
                     source.destroy();
                 } else if (registrationLinkPrefix === undefined) {
-                    res.status(400).json({message: ['registration link prefix not found']});
+                    res.status(400).json({ message: ['registration link prefix not found'] });
                     source.destroy();
                 }
             })
@@ -267,56 +326,56 @@ const createUserByCsv = async (req, res) => {
                 rowNum += 1;
             })
             .on('end', async () => {
-                    const existingUsers = (await UserRepository.findAllUserByEmail(emails));
-                    if (existingUsers.length > 0) {
-                        for (let i = 0; i < existingUsers.length; i++) {
-                            errMessage.push(existingUsers[i].email + ' user existed');
-                        }
-                    }
-                    if (errMessage.length > 0) {
-                        res.status(400).json({message: errMessage});
-                    } else {
-                        var usersData = emails.map(email => {
-                            const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
-                            return {'email': email, 'active': false, verification_hash: hashEmail};
-                        });
-
-                        const t = await db.sequelize.transaction();
-                        const promises = [];
-                        for (let i = 0; i < usersData.length; i++) {
-                            promises[i] = UserRepository.createUser(usersData[i], {transaction: t});
-                        }
-                        Promise.all(promises).then(users => {
-                            const userRolePromises = [];
-                            for (let i = 0; i < users.length; i++) {
-                                userRolePromises.push(RoleRepository.findRoleById(rows[users[i].email]).then(role => {
-                                    users[i].addRole(role);
-                                    return users[i];
-                                }));
-                            }
-                            return Promise.all(userRolePromises);
-                        }).then(function (users) {
-                            let emailPromises = [];
-
-                            users.forEach(user => {
-                                const email = user.email;
-                                const verification_hash = user.verification_hash;
-                                const registrationLink = registrationLinkPrefix + '/' + verification_hash;
-                                const {subject, text} = buildVerificationEmail(email, registrationLink);
-                                emailPromises.push(sendEmail(email, subject, text, res));
-                            });
-
-                            return Promise.all(emailPromises);
-                        }).then((result) => {
-                            t.commit();
-                            res.send(result);
-                        }).catch(function (err) {
-                            t.rollback();
-                            console.log(err);
-                            return res.status(400).json({error: err.toString});
-                        });
+                const existingUsers = (await UserRepository.findAllUserByEmail(emails));
+                if (existingUsers.length > 0) {
+                    for (let i = 0; i < existingUsers.length; i++) {
+                        errMessage.push(existingUsers[i].email + ' user existed');
                     }
                 }
+                if (errMessage.length > 0) {
+                    res.status(400).json({ message: errMessage });
+                } else {
+                    var usersData = emails.map(email => {
+                        const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
+                        return { 'email': email, 'active': false, verification_hash: hashEmail };
+                    });
+
+                    const t = await db.sequelize.transaction();
+                    const promises = [];
+                    for (let i = 0; i < usersData.length; i++) {
+                        promises[i] = UserRepository.createUser(usersData[i], { transaction: t });
+                    }
+                    Promise.all(promises).then(users => {
+                        const userRolePromises = [];
+                        for (let i = 0; i < users.length; i++) {
+                            userRolePromises.push(RoleRepository.findRoleById(rows[users[i].email]).then(role => {
+                                users[i].addRole(role);
+                                return users[i];
+                            }));
+                        }
+                        return Promise.all(userRolePromises);
+                    }).then(function (users) {
+                        let emailPromises = [];
+
+                        users.forEach(user => {
+                            const email = user.email;
+                            const verification_hash = user.verification_hash;
+                            const registrationLink = registrationLinkPrefix + '/' + verification_hash;
+                            const { subject, text } = buildVerificationEmail(email, registrationLink);
+                            emailPromises.push(sendEmail(email, subject, text, res));
+                        });
+
+                        return Promise.all(emailPromises);
+                    }).then((result) => {
+                        t.commit();
+                        res.send(result);
+                    }).catch(function (err) {
+                        t.rollback();
+                        console.log(err);
+                        return res.status(400).json({ error: err.toString });
+                    });
+                }
+            }
             );
     } else {
         res.json('Wrong document format')
@@ -348,27 +407,27 @@ const createUser = async (req, res) => {
                             user.addRole(role);
                             return user;
                         }).then(async (userResult) => {
-                        console.log(userResult);
-                        const verification_hash = userResult.verification_hash;
-                        const registrationLink = registrationLinkPrefix + '/' + verification_hash;
-                        const {subject, text} = buildVerificationEmail(email, registrationLink);
-                        await sendEmail(email, subject, text, res);
+                            console.log(userResult);
+                            const verification_hash = userResult.verification_hash;
+                            const registrationLink = registrationLinkPrefix + '/' + verification_hash;
+                            const { subject, text } = buildVerificationEmail(email, registrationLink);
+                            await sendEmail(email, subject, text, res);
 
-                        res.json({status: userResult.email + ' registered'});
+                            res.json({ status: userResult.email + ' registered' });
 
-                    }).catch(function (err) {
-                        console.log(err);
-                        return res.status(400).json({message: 'error: ' + err});
-                    });
+                        }).catch(function (err) {
+                            console.log(err);
+                            return res.status(400).json({ message: 'error: ' + err });
+                        });
                 } else {
-                    res.status(400).json({message: ' User already exists'});
+                    res.status(400).json({ message: ' User already exists' });
                 }
             })
             .catch((err) => {
-                res.status(400).json({message: 'error: ' + err});
+                res.status(400).json({ message: 'error: ' + err });
             });
     } else {
-        res.status(400).json({message: 'Invalid role assignment'});
+        res.status(400).json({ message: 'Invalid role assignment' });
     }
 
 }

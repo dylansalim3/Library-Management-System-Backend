@@ -66,9 +66,20 @@ const buildVerificationEmail = (receiverFirstName,registrationLink) =>{
     return {subject:subject,text:text};
 }
 
+const buildResetPasswordEmail = (resetPasswordLink) =>{
+    var subject = "[E-Library] Password Recovery";
+    var text = `
+    <h2>Password Recovery</h2>
+    <p>You recently requested password reset for account associated with this email.</p>
+    <br>
+    <p>Click on the <b><a href="http://${resetPasswordLink}">link</a></b> to reset your password</p>
+    `;
+    return {subject:subject,text:text};
+}
+
 function validateEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(email);
 }
 
-module.exports = {buildVerificationEmail,sendEmail,validateEmail};
+module.exports = {buildResetPasswordEmail,buildVerificationEmail,sendEmail,validateEmail};

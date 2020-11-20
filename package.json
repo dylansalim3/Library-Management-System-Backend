@@ -9,19 +9,26 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "bcrypt": "^4.0.1",
+    "bcrypt": "^5.0.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "csv-parser": "^2.3.3",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "googleapis": "^59.0.0",
+    "highcharts-export-server": "^2.0.28",
     "jsonwebtoken": "^8.5.1",
+    "jspdf": "^2.1.1",
+    "mime": "^2.4.6",
     "multer": "^1.4.2",
     "mysql": "^2.18.1",
+    "mysql-import": "^4.0.24",
     "mysql2": "^2.1.0",
+    "mysqldump": "^3.2.0",
     "nodemailer": "^6.4.8",
     "nodemon": "^2.0.3",
-    "googleapis": "^59.0.0",
-    "dotenv": "^8.2.0",
-    "sequelize": "^5.21.7"
+    "sequelize": "^5.21.7",
+    "socket.io": "^2.3.0",
+    "web-push": "^3.4.4"
   }
 }

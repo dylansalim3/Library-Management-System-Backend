@@ -1,5 +1,3 @@
-const Book = require('../models/Book');
-const BookDetail = require('../models/BookDetail');
 const db = require('../database/db');
 const UserRepository = require("../repository/UserRepository");
 const BorrowBookRepository = require("../repository/BorrowBookRepository");
@@ -54,7 +52,7 @@ exports.getBookHistory = async (req,res)=>{
         res.status(404).end();
     }else{
         const borrowBookHistoryResults = await BorrowBookHistoryRepository.findAllBorrowBookHistoryByUserId(userId);
-        const borrowBookResults = await BorrowBookRepository.findAllBorrowBook({include:[{model:Book,require:true,include:[BookDetail]}],where:{user_id:userId}});
+        const borrowBookResults = await BorrowBookRepository.findAllBorrowBook(userId);
 
         const mappedBorrowBookHistoryResults = borrowBookHistoryResults.map(result=>{
 
