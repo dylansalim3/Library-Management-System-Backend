@@ -61,6 +61,8 @@ const Notifications = require('./routes/Notifications');
 const Reports = require('./routes/Reports');
 const Dashboard = require('./routes/Dashboard');
 const BookRequests = require('./routes/BookRequests');
+const Author = require('./routes/Author');
+const BookCategory = require('./routes/BookCategory');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -77,6 +79,8 @@ app.use('/notification', Notifications);
 app.use('/report', Reports);
 app.use('/dashboard', Dashboard);
 app.use('/book-request', BookRequests);
+app.use('/author',Author);
+app.use('/bookCategory',BookCategory);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
