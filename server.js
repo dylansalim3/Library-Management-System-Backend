@@ -3,7 +3,7 @@ var cors = require("cors");
 var bodyParser = require("body-parser");
 var app = express();
 var port = 5000;
-
+const fs = require('fs');
 
 app.use(bodyParser.json());
 app.use(cors({
@@ -30,6 +30,15 @@ const storage = multer.diskStorage({
     }
 })
 
+const ebookStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/ebooks');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname);
+  },
+});
+
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
         cb(null, true);
@@ -45,6 +54,10 @@ const upload = multer({
         fileSize: 1024 * 1024 * 5
     },
     fileFilter: fileFilter
+})
+
+const ebookUpload = multer({
+    storage: ebookStorage
 })
 
 const Users = require('./routes/Users');
@@ -86,6 +99,30 @@ app.use('/bookCategory',BookCategory);
 app.post('/file', upload.single('file'), function (req, res, next) {
     const filepath = req.file.path;
     res.send(filepath);
+});
+
+app.post('/file-ebook', ebookUpload.single('file'), function (req, res, next) {
+  const filepath = req.file.path;
+  res.send(filepath);
+});
+
+app.get('/viewebook', function (req, response) {
+    var tempFile = req.query.ebookpath;
+//  response.sendFile(tempFile);
+// var data = fs.readFileSync(tempFile);
+// res.contentType('application/pdf');
+// res.send(data);
+response.redirect('http://example.com');
+
+//   var tempFile = req.query.ebookpath;
+//   console.log("file name isssss "+tempFile);
+
+//   response.send(String(req.query.ebookpath));
+
+//   fs.readFile(tempFile, function (err, data) {
+//     response.contentType('application/pdf');
+//     response.send(data);
+//   });
 });
 
 const borrowBook = require('./models/BorrowBook');
