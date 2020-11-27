@@ -3,7 +3,7 @@ var cors = require("cors");
 var bodyParser = require("body-parser");
 var app = express();
 var port = 5000;
-
+const fs = require('fs');
 
 app.use(bodyParser.json());
 app.use(cors({
@@ -30,6 +30,15 @@ const storage = multer.diskStorage({
     }
 })
 
+const ebookStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/ebooks');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + file.originalname);
+  },
+});
+
 const fileFilter = (req, file, cb) => {
     if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
         cb(null, true);
@@ -47,6 +56,10 @@ const upload = multer({
     fileFilter: fileFilter
 })
 
+const ebookUpload = multer({
+    storage: ebookStorage
+})
+
 const Users = require('./routes/Users');
 const Books = require('./routes/Books');
 const BookDetails = require('./routes/BookDetails');
@@ -61,6 +74,8 @@ const Notifications = require('./routes/Notifications');
 const Reports = require('./routes/Reports');
 const Dashboard = require('./routes/Dashboard');
 const BookRequests = require('./routes/BookRequests');
+const Author = require('./routes/Author');
+const BookCategory = require('./routes/BookCategory');
 
 app.use('/uploads', express.static('uploads'));
 app.use('/users', Users);
@@ -77,12 +92,20 @@ app.use('/notification', Notifications);
 app.use('/report', Reports);
 app.use('/dashboard', Dashboard);
 app.use('/book-request', BookRequests);
+app.use('/author',Author);
+app.use('/bookCategory',BookCategory);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
     const filepath = req.file.path;
     res.send(filepath);
 });
+
+app.post('/file-ebook', ebookUpload.single('file'), function (req, res, next) {
+  const filepath = req.file.path;
+  res.send(filepath);
+});
+
 
 const borrowBook = require('./models/BorrowBook');
 const borrowBookHistory = require('./models/BorrowBookHistory');

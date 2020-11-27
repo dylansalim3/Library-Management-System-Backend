@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `author` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 37 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: book
@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS `book` (
   CONSTRAINT `book_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE
   SET
   NULL ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: book_author
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `book_author` (
   KEY `author_id` (`author_id`),
   CONSTRAINT `book_author_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `book_author_ibfk_2` FOREIGN KEY (`author_id`) REFERENCES `author` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: book_detail
@@ -66,11 +66,30 @@ CREATE TABLE IF NOT EXISTS `book_detail` (
   `summary` varchar(255) DEFAULT NULL,
   `status` varchar(255) DEFAULT NULL,
   `created` datetime DEFAULT NULL,
-  `author` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `genre_id` (`genre_id`),
   CONSTRAINT `book_detail_ibfk_1` FOREIGN KEY (`genre_id`) REFERENCES `genre` (`id`) ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 12 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: book_request
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `book_request` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` int DEFAULT NULL,
+  `book_id` int DEFAULT NULL,
+  `type` varchar(255) DEFAULT NULL,
+  `status` varchar(255) DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `reject_reason` varchar(255) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  KEY `book_id` (`book_id`),
+  CONSTRAINT `book_request_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE,
+  CONSTRAINT `book_request_ibfk_2` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: borrow_book
@@ -87,7 +106,7 @@ CREATE TABLE IF NOT EXISTS `borrow_book` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `borrow_book_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `borrow_book_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: borrow_book_history
@@ -107,7 +126,7 @@ CREATE TABLE IF NOT EXISTS `borrow_book_history` (
   KEY `user_id` (`user_id`),
   CONSTRAINT `borrow_book_history_ibfk_1` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON UPDATE CASCADE,
   CONSTRAINT `borrow_book_history_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 2 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: category
@@ -122,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `category` (
   CONSTRAINT `category_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE
   SET
   NULL ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 14 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: genre
@@ -132,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `genre` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 14 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: library_map
@@ -144,7 +163,26 @@ CREATE TABLE IF NOT EXISTS `library_map` (
   `name` varchar(255) DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+
+# ------------------------------------------------------------
+# SCHEMA DUMP FOR TABLE: notification
+# ------------------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `notification` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `unread` tinyint(1) DEFAULT '1',
+  `title` varchar(255) DEFAULT NULL,
+  `url` varchar(255) DEFAULT NULL,
+  `thumbnail_url` varchar(255) DEFAULT NULL,
+  `priority` varchar(255) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `enable_push` tinyint(1) DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `notification_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: role
@@ -154,17 +192,7 @@ CREATE TABLE IF NOT EXISTS `role` (
   `id` int NOT NULL AUTO_INCREMENT,
   `role` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = latin1;
-
-# ------------------------------------------------------------
-# SCHEMA DUMP FOR TABLE: sequelizemeta
-# ------------------------------------------------------------
-
-CREATE TABLE IF NOT EXISTS `sequelizemeta` (
-  `name` varchar(255) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  PRIMARY KEY (`name`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8 COLLATE = utf8_unicode_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: user_role
@@ -179,7 +207,7 @@ CREATE TABLE IF NOT EXISTS `user_role` (
   KEY `role_id` (`role_id`),
   CONSTRAINT `user_role_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `user_role_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 39 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: users
@@ -199,7 +227,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `phonenum` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE = InnoDB AUTO_INCREMENT = 26 DEFAULT CHARSET = latin1;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: author
@@ -216,15 +244,31 @@ VALUES
 INSERT INTO
   `author` (`id`, `name`)
 VALUES
-  (3, NULL);
+  (3, 'x');
 INSERT INTO
   `author` (`id`, `name`)
 VALUES
-  (4, 'cdsadsscd');
+  (4, 'new auth');
 INSERT INTO
   `author` (`id`, `name`)
 VALUES
-  (5, 'Y.C Chow');
+  (32, 'auto,dqwdqw,asdwsdqw');
+INSERT INTO
+  `author` (`id`, `name`)
+VALUES
+  (33, 'ee');
+INSERT INTO
+  `author` (`id`, `name`)
+VALUES
+  (34, 'dqw');
+INSERT INTO
+  `author` (`id`, `name`)
+VALUES
+  (35, 'dqe');
+INSERT INTO
+  `author` (`id`, `name`)
+VALUES
+  (36, 'ebook author, adam');
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: book
@@ -245,11 +289,39 @@ VALUES
 INSERT INTO
   `book` (`id`, `status`, `created`, `book_detail_id`)
 VALUES
-  (4, 'available', '2020-09-12 11:58:57', 3);
+  (4, 'AVAILABLE', '2020-11-26 14:20:22', NULL);
 INSERT INTO
   `book` (`id`, `status`, `created`, `book_detail_id`)
 VALUES
-  (5, 'available', '2020-09-13 14:38:00', 4);
+  (5, 'available', '2020-11-26 19:08:45', NULL);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (6, 'available', '2020-11-27 01:26:40', NULL);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (7, 'available', '2020-11-27 02:01:09', NULL);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (8, 'available', '2020-11-27 02:09:47', 7);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (9, 'available', '2020-11-27 02:39:36', 8);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (10, 'available', '2020-11-27 02:42:08', 9);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (11, 'available', '2020-11-27 02:44:23', 10);
+INSERT INTO
+  `book` (`id`, `status`, `created`, `book_detail_id`)
+VALUES
+  (12, 'available', '2020-11-27 06:04:06', 11);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: book_author
@@ -262,20 +334,62 @@ VALUES
 INSERT INTO
   `book_author` (`id`, `book_detail_id`, `author_id`)
 VALUES
-  (2, 2, 3);
+  (6, 7, 32);
 INSERT INTO
   `book_author` (`id`, `book_detail_id`, `author_id`)
 VALUES
-  (4, 3, NULL);
+  (7, 8, 33);
 INSERT INTO
   `book_author` (`id`, `book_detail_id`, `author_id`)
 VALUES
-  (5, 4, 5);
+  (8, 9, 34);
+INSERT INTO
+  `book_author` (`id`, `book_detail_id`, `author_id`)
+VALUES
+  (9, 10, 35);
+INSERT INTO
+  `book_author` (`id`, `book_detail_id`, `author_id`)
+VALUES
+  (10, 11, 36);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: book_detail
 # ------------------------------------------------------------
 
+INSERT INTO
+  `book_detail` (
+    `id`,
+    `isbn`,
+    `title`,
+    `datepublished`,
+    `publisher`,
+    `type`,
+    `e_book`,
+    `category_id`,
+    `genre_id`,
+    `location`,
+    `bookimg`,
+    `summary`,
+    `status`,
+    `created`
+  )
+VALUES
+  (
+    1,
+    'ss',
+    'ss',
+    '2020-05-01 00:00:00',
+    's2',
+    'physical',
+    NULL,
+    2,
+    2,
+    'swq',
+    'uploads/1589162180832developmentprocess.jpg',
+    'sqwsq',
+    'AVAILABLE',
+    '2020-05-11 00:00:00'
+  );
 INSERT INTO
   `book_detail` (
     `id`,
@@ -329,20 +443,20 @@ INSERT INTO
   )
 VALUES
   (
-    3,
-    'dss',
-    'effsfvs',
-    '2020-09-01 00:00:00',
-    'plokij',
+    7,
+    'auto',
+    'auto',
+    '2020-11-19 00:00:00',
+    'dqw',
     'physical',
     NULL,
-    1,
-    1,
-    'Rack 1',
+    2,
     NULL,
-    'fsdvfdsvfdsvfdsvds',
+    'qdw',
+    NULL,
+    'dqw',
     'available',
-    '2020-09-12 11:58:57'
+    '2020-11-27 02:09:47'
   );
 INSERT INTO
   `book_detail` (
@@ -363,21 +477,128 @@ INSERT INTO
   )
 VALUES
   (
-    4,
-    '138729473298',
-    'GS 24: FIELD TRIP TO NIAGARA FALLS',
-    '2020-09-03 00:00:00',
-    'SCHOLASTIC',
-    'physical',
+    8,
+    'ebook',
+    'ebook',
+    '2020-11-06 00:00:00',
+    'dwq',
+    'digital',
     NULL,
-    1,
-    1,
-    'Rack 2A',
+    2,
     NULL,
-    'fewfefewfw',
+    'dqw',
+    NULL,
+    'dwq',
     'available',
-    '2020-09-13 14:38:00'
+    '2020-11-27 02:39:36'
   );
+INSERT INTO
+  `book_detail` (
+    `id`,
+    `isbn`,
+    `title`,
+    `datepublished`,
+    `publisher`,
+    `type`,
+    `e_book`,
+    `category_id`,
+    `genre_id`,
+    `location`,
+    `bookimg`,
+    `summary`,
+    `status`,
+    `created`
+  )
+VALUES
+  (
+    9,
+    'dqw',
+    'dqw',
+    '2020-10-30 00:00:00',
+    'dqw',
+    'digital',
+    NULL,
+    2,
+    2,
+    'dwq',
+    NULL,
+    'dwq',
+    'available',
+    '2020-11-27 02:42:08'
+  );
+INSERT INTO
+  `book_detail` (
+    `id`,
+    `isbn`,
+    `title`,
+    `datepublished`,
+    `publisher`,
+    `type`,
+    `e_book`,
+    `category_id`,
+    `genre_id`,
+    `location`,
+    `bookimg`,
+    `summary`,
+    `status`,
+    `created`
+  )
+VALUES
+  (
+    10,
+    'dqw',
+    'dwq',
+    '2020-10-30 00:00:00',
+    'edq',
+    'digital',
+    'uploads/ebooks/1606445063901LECTURE 1 Introduction.pdf',
+    2,
+    2,
+    'deqw',
+    NULL,
+    'edqw',
+    'available',
+    '2020-11-27 02:44:23'
+  );
+INSERT INTO
+  `book_detail` (
+    `id`,
+    `isbn`,
+    `title`,
+    `datepublished`,
+    `publisher`,
+    `type`,
+    `e_book`,
+    `category_id`,
+    `genre_id`,
+    `location`,
+    `bookimg`,
+    `summary`,
+    `status`,
+    `created`
+  )
+VALUES
+  (
+    11,
+    'IB-21312',
+    'My Ebook',
+    '2020-10-30 00:00:00',
+    'ebook publisher',
+    'digital',
+    'uploads/ebooks/1606457046452T04 - View and ViewGroup.pdf',
+    12,
+    4,
+    'floor 1',
+    'uploads/1606457046408bookcover.jpeg',
+    'xdxx',
+    'available',
+    '2020-11-27 06:04:06'
+  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: book_request
+# ------------------------------------------------------------
+
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: borrow_book
@@ -388,6 +609,28 @@ VALUES
 # DATA DUMP FOR TABLE: borrow_book_history
 # ------------------------------------------------------------
 
+INSERT INTO
+  `borrow_book_history` (
+    `id`,
+    `book_id`,
+    `start_date`,
+    `due_date`,
+    `return_date`,
+    `status`,
+    `user_id`,
+    `overdue`
+  )
+VALUES
+  (
+    1,
+    4,
+    '2020-11-27 14:29:00',
+    NULL,
+    '2020-11-26 14:30:54',
+    'RETURNED',
+    3,
+    NULL
+  );
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: category
@@ -409,6 +652,42 @@ INSERT INTO
   `category` (`id`, `name`, `book_detail_id`)
 VALUES
   (4, 'article', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (5, 'Horror', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (6, 'Sci-fi', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (7, 'x', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (8, 'ok', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (9, 'new cat', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (10, '9.25am', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (11, 'xx', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (12, 'E-scifi', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (13, 'ws', NULL);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: genre
@@ -434,29 +713,48 @@ INSERT INTO
   `genre` (`id`, `name`)
 VALUES
   (5, 'Romance');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (6, 'Sci-Fi');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (7, 'nice su');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (8, 'yeah');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (9, 'hello');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (10, 'xxxxx');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (11, 'really?');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (12, 'jinja?');
+INSERT INTO
+  `genre` (`id`, `name`)
+VALUES
+  (13, '9.25am');
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: library_map
 # ------------------------------------------------------------
 
-INSERT INTO
-  `library_map` (`id`, `floor`, `name`, `image_url`)
-VALUES
-  (
-    2,
-    1,
-    'Block A',
-    'uploads/library_map/1600188158336Screenshot from 2020-09-08 23-37-44.png'
-  );
-INSERT INTO
-  `library_map` (`id`, `floor`, `name`, `image_url`)
-VALUES
-  (
-    5,
-    1,
-    'Block B',
-    'uploads/library_map/1600274007499Screenshot-from 2020-09-13 23-00-31.png'
-  );
+
+# ------------------------------------------------------------
+# DATA DUMP FOR TABLE: notification
+# ------------------------------------------------------------
+
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: role
@@ -480,58 +778,21 @@ VALUES
   (4, 'teacher');
 
 # ------------------------------------------------------------
-# DATA DUMP FOR TABLE: sequelizemeta
-# ------------------------------------------------------------
-
-
-# ------------------------------------------------------------
 # DATA DUMP FOR TABLE: user_role
 # ------------------------------------------------------------
 
 INSERT INTO
   `user_role` (`id`, `user_id`, `role_id`)
 VALUES
-  (7, 1, 2);
+  (1, 2, 1);
 INSERT INTO
   `user_role` (`id`, `user_id`, `role_id`)
 VALUES
-  (33, 1, 3);
+  (2, 3, 2);
 INSERT INTO
   `user_role` (`id`, `user_id`, `role_id`)
 VALUES
-  (8, 2, 1);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (9, 3, 2);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (32, 3, 3);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (12, 7, 3);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (17, 12, 2);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (34, 12, 3);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (35, 24, 2);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (38, 24, 3);
-INSERT INTO
-  `user_role` (`id`, `user_id`, `role_id`)
-VALUES
-  (30, 25, 4);
+  (3, 3, 3);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: users
@@ -553,45 +814,17 @@ INSERT INTO
   )
 VALUES
   (
-    1,
-    'dylan',
-    'salim',
-    'dylansalim7@gmail.com',
-    '$2b$10$Yn5JxzSDu5/4JGJSnFoS0uCIP7LohmriGBxFq2cit78SeIO.BvvXO',
-    '2020-09-12 09:44:39',
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL
-  );
-INSERT INTO
-  `users` (
-    `id`,
-    `first_name`,
-    `last_name`,
-    `email`,
-    `password`,
-    `created`,
-    `active`,
-    `verification_hash`,
-    `profileimg`,
-    `address`,
-    `phonenum`
-  )
-VALUES
-  (
     2,
-    'dylan',
-    'salim',
-    'dylansalim3@gmail.com',
-    '$2b$10$At.1xYEM8BExLDx0Vg/V6ewQXm5F9OIEylO8SvrhuWJsyzVXsU8LC',
-    '2020-09-12 09:59:49',
+    'yann',
+    'ng',
+    'admin@test.com',
+    '$2b$10$DrQZ4mxrmtFLsXIHFITK9uh1FfbxdSbDv1QhKkAzbzR296U549Eqi',
+    '2020-11-26 14:06:08',
     0,
     NULL,
     NULL,
-    NULL,
-    '74'
+    '1home',
+    '111'
   );
 INSERT INTO
   `users` (
@@ -610,125 +843,13 @@ INSERT INTO
 VALUES
   (
     3,
-    'dylan',
-    'salim',
-    'dylansalim1@gmail.com',
-    '$2b$10$BG4syFwTrezEFxCIuEKK8uA4miykzV4iyhqzhkdz/FiE1BEqVkYUu',
-    '2020-09-12 13:15:21',
+    'lord',
+    'ng',
+    'student@test.com',
+    '$2b$10$w8t0vNl1tT2IPlERYk7myOZYqTJhFah9eC1mHxD0S6lx76nXo1Rdy',
+    '2020-11-26 14:07:55',
     0,
     NULL,
-    NULL,
-    NULL,
-    NULL
-  );
-INSERT INTO
-  `users` (
-    `id`,
-    `first_name`,
-    `last_name`,
-    `email`,
-    `password`,
-    `created`,
-    `active`,
-    `verification_hash`,
-    `profileimg`,
-    `address`,
-    `phonenum`
-  )
-VALUES
-  (
-    7,
-    'Dylan',
-    'Salim',
-    'healthinsider10@gmail.com',
-    '$2b$10$Zzdcsh7TEvy5zn/0qaSqXOlaga7ZVcNU2oG5RNR1p.ZFFofX/9NZi',
-    '2020-09-13 08:26:14',
-    1,
-    '',
-    'uploads/1599987204446Screenshot from 2020-09-12 22-41-26.png',
-    'fdewfwewf',
-    '0186650165'
-  );
-INSERT INTO
-  `users` (
-    `id`,
-    `first_name`,
-    `last_name`,
-    `email`,
-    `password`,
-    `created`,
-    `active`,
-    `verification_hash`,
-    `profileimg`,
-    `address`,
-    `phonenum`
-  )
-VALUES
-  (
-    12,
-    'dylan',
-    'salim',
-    'dylansalim4@gmail.com',
-    '$2b$10$ubOleZeo8wsBjiXgWLtsFOfnzSM4Z2kCZD6tY2ABMfqk/kIfumicS',
-    '2020-09-13 10:04:07',
-    0,
-    NULL,
-    NULL,
-    NULL,
-    NULL
-  );
-INSERT INTO
-  `users` (
-    `id`,
-    `first_name`,
-    `last_name`,
-    `email`,
-    `password`,
-    `created`,
-    `active`,
-    `verification_hash`,
-    `profileimg`,
-    `address`,
-    `phonenum`
-  )
-VALUES
-  (
-    24,
-    NULL,
-    NULL,
-    'dylansalim015@gmail.com',
-    NULL,
-    '2020-09-13 14:06:40',
-    0,
-    '$2b$10$JznKwLOvYUamXYeKiaJ7Ru90impKb.N4JbNrVK1BGKqElWf6L3SXG',
-    NULL,
-    NULL,
-    NULL
-  );
-INSERT INTO
-  `users` (
-    `id`,
-    `first_name`,
-    `last_name`,
-    `email`,
-    `password`,
-    `created`,
-    `active`,
-    `verification_hash`,
-    `profileimg`,
-    `address`,
-    `phonenum`
-  )
-VALUES
-  (
-    25,
-    NULL,
-    NULL,
-    'dylansalim003@gmail.com',
-    NULL,
-    '2020-09-13 14:06:40',
-    0,
-    '$2b$10$fe.5wC98GCu22Z1wjWYu2OQvupiYzB.1F8wppqeeMnitD82txiaOG',
     NULL,
     NULL,
     NULL
