@@ -106,24 +106,6 @@ app.post('/file-ebook', ebookUpload.single('file'), function (req, res, next) {
   res.send(filepath);
 });
 
-app.get('/viewebook', function (req, response) {
-    var tempFile = req.query.ebookpath;
-//  response.sendFile(tempFile);
-// var data = fs.readFileSync(tempFile);
-// res.contentType('application/pdf');
-// res.send(data);
-response.redirect('http://example.com');
-
-//   var tempFile = req.query.ebookpath;
-//   console.log("file name isssss "+tempFile);
-
-//   response.send(String(req.query.ebookpath));
-
-//   fs.readFile(tempFile, function (err, data) {
-//     response.contentType('application/pdf');
-//     response.send(data);
-//   });
-});
 
 const borrowBook = require('./models/BorrowBook');
 const borrowBookHistory = require('./models/BorrowBookHistory');
