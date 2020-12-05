@@ -1,14 +1,18 @@
 const BookRequestRepository = require('./../repository/BookRequestRepository');
 const BorrowBookRepository = require('./../repository/BorrowBookRepository');
 const BookRepository = require('./../repository/BookRepository');
+const UserRepository = require('./../repository/UserRepository');
+const NotificationRepository = require('./../repository/NotificationRepository');
 const Book = require('../models/Book');
 const { EXTEND, RESERVE, ACCEPTED, REJECTED, PROCESSING, BORROWED, UNAVAILABLE, AVAILABLE } = require('./../constant/constant');
+const { ADMIN } = require("../constant/constant");
 
 exports.findAllAvailableBorrowedBooksByUserId = async (req, res) => {
     const { userId } = req.body;
     const borrowedBooks = await BorrowBookRepository.findAllBorrowBook(userId);
-    const bookRequests = await BookRequestRepository.findAllExtendBookRequestByUserId(userId);
+    const bookRequests = await BookRequestRepository.findAllProcessingExtendBookRequestByUserId(userId);
     const bookIdListInBookRequests = bookRequests.map(bookRequest => bookRequest.book_id);
+    // Exclude all processing books
     const filteredBorrowedBooks = borrowedBooks.filter(borrowBook => !bookIdListInBookRequests.includes(borrowBook.book_id));
     const mappedBorrowBookResults = filteredBorrowedBooks.map(result => {
         return {
@@ -45,7 +49,7 @@ exports.findBorrowBooksByUserIdAndBookId = (req, res) => {
 }
 
 exports.createExtendBookRequest = async (req, res) => {
-    const { userId, borrowBookIdList } = req.body;
+    const { userId, borrowBookIdList, url } = req.body;
     const type = EXTEND;
     const status = PROCESSING;
     try {
@@ -53,10 +57,7 @@ exports.createExtendBookRequest = async (req, res) => {
         for (let borrowBookId of borrowBookIdList) {
             const borrowBook = await BorrowBookRepository.findBorrowBookByPk(borrowBookId);
             const bookId = borrowBook.book_id;
-            const bookRequest = await BookRequestRepository.findBookRequestByBookId(bookId);
-            if (bookRequest) {
-                res.status(400).json({ err: "Book Request have been submitted" });
-            }
+            
             const newBookRequest = {
                 user_id: userId,
                 book_id: bookId,
@@ -64,10 +65,25 @@ exports.createExtendBookRequest = async (req, res) => {
                 status,
             }
             newBookRequests.push(newBookRequest);
-
+            
         }
-        BookRequestRepository.bulkCreateBookRequest(newBookRequests);
-        res.json({ success: true });
+        BookRequestRepository.bulkCreateBookRequest(newBookRequests).then(async result => {
+            const allAdminUser = await UserRepository.findAllUserByRole(ADMIN);
+            const allPromises = [];
+            if (allAdminUser !== undefined) {
+                allAdminUser.forEach(admin => {
+                    const userId = admin.id;
+                    const title = "New Book Request is available";
+                    const desc = "1 new book request added";
+                    const thumbnailUrl = "https://img.icons8.com/plasticine/2x/resize-diagonal.png";
+                    allPromises.push(NotificationRepository.createNotification({ userId, title, desc, url, enablePush: true, priority: 'HIGH', thumbnailUrl }));
+                });
+            }
+            Promise.all(allPromises).then(values=>{
+                res.json({ success: true });
+            });
+        });
+        
     } catch (err) {
         res.status(500).json({ err: err.toString() })
     }
@@ -107,12 +123,18 @@ exports.findAllExtendBookRequest = (req, res) => {
 }
 
 exports.acceptExtendBookRequest = async (req, res) => {
-    const { bookRequestId, newDueDate } = req.body;
+    const { bookRequestId, newDueDate, url } = req.body;
     const status = ACCEPTED;
     const bookRequest = await BookRequestRepository.findBookRequestByPk(bookRequestId);
     try {
         BorrowBookRepository.extendDueDate(bookRequest.book_id, bookRequest.user_id, newDueDate).then(result => {
-            BookRequestRepository.updateBookRequestStatus(bookRequestId, status).then(result => {
+            BookRequestRepository.updateBookRequestStatus(bookRequestId, status).then(bookReqResult => {
+                const userId = bookReqResult.user_id;
+                const title = "Book Request have been accepted";
+                const desc = "A book request have been accepted";
+                const thumbnailUrl = "https://www.freeiconspng.com/thumbs/success-icon/success-icon-10.png";
+                NotificationRepository.createNotification({ userId, title, desc, url, enablePush: true, priority: 'HIGH', thumbnailUrl });
+
                 res.json({ success: true });
             });
         });
@@ -123,12 +145,19 @@ exports.acceptExtendBookRequest = async (req, res) => {
 }
 
 exports.rejectExtendBookRequest = (req, res) => {
-    const { bookRequestId, rejectReason } = req.body;
+    const { bookRequestId, rejectReason, url } = req.body;
     const status = REJECTED;
-    BookRequestRepository.updateBookRequestStatus(bookRequestId, status, rejectReason).then(result => {
+    BookRequestRepository.updateBookRequestStatus(bookRequestId, status, rejectReason).then(bookReqResult => {
+        const userId = bookReqResult.user_id;
+        const title = "Book Request have been rejected";
+        const desc = rejectReason;
+        const thumbnailUrl = "https://www.pinclipart.com/picdir/middle/249-2495553_icon-failure-clipart.png";
+        NotificationRepository.createNotification({ userId, title, desc, url, enablePush: true, priority: 'HIGH', thumbnailUrl });
+
         res.json({ success: true });
     }).catch(err => {
-        res.json(500).json({ err: err.toString() });
+        console.log(err.toString());
+        res.status(500).json({ err: err.toString() });
     })
 }
 
@@ -265,11 +294,13 @@ exports.acceptBookReservationRequest = async (req, res) => {
 exports.rejectBookReservationRequest = (req, res) => {
     // set book to available
     const { bookRequestId, rejectReason } = req.body;
+    console.log(rejectReason);
     BookRequestRepository.updateBookRequestStatus(bookRequestId, REJECTED, rejectReason).then(bookRequest => {
         return BookRepository.updateBookStatus(bookRequest.book_id, AVAILABLE).then(book => {
             res.json({ success: true });
         });
     }).catch(err => {
+        console.log(err);
         res.status(500).json({ err: err.toString() });
     });
 }

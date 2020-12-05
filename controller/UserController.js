@@ -20,10 +20,16 @@ exports.getUserById = (req, res) => {
 exports.updateUserProfile = (req, res) => {
     const firstName = req.body.first_name;
     const lastName = req.body.last_name;
-    const profileImg = req.body.profileimg;
+    let profileImg = req.body.profileimg;
     const address = req.body.address;
     const phoneNum = req.body.phonenum;
     const userId = req.body.userid;
+
+    if (profileImg !== null && profileImg !== undefined) {
+        console.log(req.body.profileImg)
+        profileImg = profileImg.replace(/\\/g, "/");
+    }
+
 
     UserRepository.updateUserProfile(firstName, lastName, profileImg, address, phoneNum, userId)
         .then((result) => {
@@ -185,7 +191,7 @@ exports.getUserByVerificationHash = (req, res) => {
 }
 
 exports.adminGetAllProfile = (req, res) => {
-    UserRepository.findAllUserByRole(ModifiableRole.ADMIN).then(result => {
+    UserRepository.findAllModifiableUserByRole(ModifiableRole.ADMIN).then(result => {
         res.json(result);
     }).catch(err => {
         res.status(500).json({ error: err.toString() });
@@ -244,7 +250,7 @@ exports.sendForgetPasswordEmail = (req, res) => {
 
     const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
 
-    console.log('received email address : '+email);
+    console.log('received email address : ' + email);
     UserRepository.updateUserVerificationHashByEmail(email, hashEmail).then(async result => {
         const resetPasswordLink = resetPasswordLinkPrefix + '/' + hashEmail;
         const { subject, text } = buildResetPasswordEmail(resetPasswordLink);

@@ -26,7 +26,7 @@ exports.updateLibraryMap = (req, res) => {
         } catch (err) {
             console.log(err.toString());
         }
-        libraryMap.image_url = file.path;
+        libraryMap.image_url = file.path.replace(/\\/g, "/");
         libraryMap.save();
         res.json({ success: true });
     }).catch(err => {
