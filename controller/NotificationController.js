@@ -1,8 +1,8 @@
 const NotificationRepository = require('./../repository/NotificationRepository');
 
 exports.sendNotification = (req, res) => {
-    const { userId, title, desc, enablePush, priority, thumbnailUrl } = req.body;
-    NotificationRepository.createNotification({ userId, title, desc, enablePush, priority, thumbnailUrl }).then(result => {
+    const { userId, title, desc, url, enablePush, priority, thumbnailUrl } = req.body;
+    NotificationRepository.createNotification({ userId, title, desc, url, enablePush, priority, thumbnailUrl }).then(result => {
         res.json({ success: true });
     }).catch(err => {
         res.status(500).json({ err: err });
@@ -19,7 +19,7 @@ exports.getNotifications = (req, res) => {
 }
 
 exports.getAllNotifications = (req, res) => {
-    NotificationRepository.getAllNotifications().then(result=>{
+    NotificationRepository.getAllNotifications().then(result => {
         res.json(result);
     }).catch(err => {
         res.status(500).json({ err: err.toString() });

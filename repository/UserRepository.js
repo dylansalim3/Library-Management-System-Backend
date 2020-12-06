@@ -27,7 +27,7 @@ exports.findAllUserById = (idList) => {
     return User.findAll({ where: { id: idList } });
 }
 
-exports.findAllUserByRole = (modifiableRole) => {
+exports.findAllModifiableUserByRole = (modifiableRole) => {
     let allowedRoleName = [];
     if (modifiableRole === ModifiableRole.ADMIN) {
         allowedRoleName = AdminAllowedModifiableRoleName;
@@ -38,6 +38,17 @@ exports.findAllUserByRole = (modifiableRole) => {
         include: [{
             model: Role, where: {
                 role: allowedRoleName
+            }
+        },
+        ]
+    });
+}
+
+exports.findAllUserByRole = (roleName) =>{
+    return User.findAll({
+        include: [{
+            model: Role, where: {
+                role: roleName
             }
         },
         ]

@@ -14,6 +14,12 @@ exports.ACCEPTED = 'ACCEPTED';
 exports.REJECTED = 'REJECTED';
 exports.PROCESSING = 'PROCESSING';
 
+//Role Name
+exports.ADMIN = 'admin';
+exports.TEACHER = 'teacher';
+exports.STUDENT = 'student';
+exports.LIBRARIAN = 'librarian';
+
 // book report max scale
 exports.BORROWED_MAX = 80;
 exports.OVERDUE_MAX = 50;

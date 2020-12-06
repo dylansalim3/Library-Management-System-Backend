@@ -24,16 +24,17 @@ exports.startSocketServer = (server) => {
 
 
 
-exports.emitSocketNotification = ({ userId, title, desc, enablePush, priority, thumbnailUrl, created }, cb, err) => {
+exports.emitSocketNotification = ({ userId, title, desc, url, enablePush, priority, thumbnailUrl, created }, cb, err) => {
     console.log(users);
     console.log(users[userId]);
     if (users[userId] != null) {
-        io.sockets.to(users[userId]).emit('notification', { title, desc, enablePush, priority, thumbnailUrl, created });
+        io.sockets.to(users[userId]).emit('notification', { title, desc, url, enablePush, priority, thumbnailUrl, created });
         if (cb) {
             cb();
         }
     } else {
-        console.log('err occurred');
+        console.log('User not there');
+        cb();
     }
 };
 

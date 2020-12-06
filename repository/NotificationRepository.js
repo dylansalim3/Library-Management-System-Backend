@@ -1,10 +1,10 @@
 const Notification = require('./../models/Notification');
 const { emitSocketNotification } = require('./../utils/socket.util');
 
-exports.createNotification = ({ userId, title, desc, enablePush, priority, thumbnailUrl }) => {
-    return Notification.create({ title, desc, thumbnail_url: thumbnailUrl, priority, enable_push: enablePush, user_id: userId }).then(notification => {
+exports.createNotification = ({ userId, title, desc, url, enablePush, priority, thumbnailUrl }) => {
+    return Notification.create({ title, desc, url, thumbnail_url: thumbnailUrl, priority, enable_push: enablePush, user_id: userId }).then(notification => {
         const { created } = notification;
-        return emitSocketNotification({ userId, title, desc, enablePush, priority, thumbnailUrl, created }, () => {
+        return emitSocketNotification({ userId, title, desc, url, enablePush, priority, thumbnailUrl, created }, () => {
             console.log("success");
             return notification;
         });

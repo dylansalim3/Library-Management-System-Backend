@@ -12,12 +12,12 @@ exports.getLibraryMaps = (req, res) => {
 
 exports.updateLibraryMap = (req, res) => {
     const file = req.file;
-    const floor = req.body.floor;
+    const floor_name = req.body.floorName;
     const name = req.body.name;
 
     const entry = {
-        floor: floor,
-        name: name
+        floor_name,
+        name,
     }
 
     LibraryMapRepository.findOrCreateLibraryMap(entry).spread(function (libraryMap, created) {
@@ -26,7 +26,7 @@ exports.updateLibraryMap = (req, res) => {
         } catch (err) {
             console.log(err.toString());
         }
-        libraryMap.image_url = file.path;
+        libraryMap.image_url = file.path.replace(/\\/g, "/");
         libraryMap.save();
         res.json({ success: true });
     }).catch(err => {
