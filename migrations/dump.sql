@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS `author` (
   `id` int NOT NULL AUTO_INCREMENT,
   `name` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB AUTO_INCREMENT = 37 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 39 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: book
@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `book_author` (
   KEY `author_id` (`author_id`),
   CONSTRAINT `book_author_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `book_author_ibfk_2` FOREIGN KEY (`author_id`) REFERENCES `author` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 13 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: book_detail
@@ -141,7 +141,7 @@ CREATE TABLE IF NOT EXISTS `category` (
   CONSTRAINT `category_ibfk_1` FOREIGN KEY (`book_detail_id`) REFERENCES `book_detail` (`id`) ON DELETE
   SET
   NULL ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 14 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 15 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: genre
@@ -163,7 +163,7 @@ CREATE TABLE IF NOT EXISTS `library_map` (
   `name` varchar(255) DEFAULT NULL,
   `image_url` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 8 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: notification
@@ -207,7 +207,7 @@ CREATE TABLE IF NOT EXISTS `user_role` (
   KEY `role_id` (`role_id`),
   CONSTRAINT `user_role_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `user_role_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `role` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # SCHEMA DUMP FOR TABLE: users
@@ -227,7 +227,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `phonenum` varchar(255) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE = InnoDB AUTO_INCREMENT = 4 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
+) ENGINE = InnoDB AUTO_INCREMENT = 5 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_0900_ai_ci;
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: author
@@ -269,23 +269,19 @@ INSERT INTO
   `author` (`id`, `name`)
 VALUES
   (36, 'ebook author, adam');
+INSERT INTO
+  `author` (`id`, `name`)
+VALUES
+  (37, 'few');
+INSERT INTO
+  `author` (`id`, `name`)
+VALUES
+  (38, 'fwe');
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: book
 # ------------------------------------------------------------
 
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
-  (1, 'AVAILABLE', '2020-05-11 00:00:00', 2);
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
-  (2, 'AVAILABLE', '2020-05-11 00:00:00', 2);
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
-  (3, 'AVAILABLE', '2020-05-12 00:00:00', 2);
 INSERT INTO
   `book` (`id`, `status`, `created`, `book_detail_id`)
 VALUES
@@ -305,22 +301,6 @@ VALUES
 INSERT INTO
   `book` (`id`, `status`, `created`, `book_detail_id`)
 VALUES
-  (8, 'available', '2020-11-27 02:09:47', 7);
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
-  (9, 'available', '2020-11-27 02:39:36', 8);
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
-  (10, 'available', '2020-11-27 02:42:08', 9);
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
-  (11, 'available', '2020-11-27 02:44:23', 10);
-INSERT INTO
-  `book` (`id`, `status`, `created`, `book_detail_id`)
-VALUES
   (12, 'available', '2020-11-27 06:04:06', 11);
 
 # ------------------------------------------------------------
@@ -330,27 +310,15 @@ VALUES
 INSERT INTO
   `book_author` (`id`, `book_detail_id`, `author_id`)
 VALUES
-  (1, 2, 2);
-INSERT INTO
-  `book_author` (`id`, `book_detail_id`, `author_id`)
-VALUES
-  (6, 7, 32);
-INSERT INTO
-  `book_author` (`id`, `book_detail_id`, `author_id`)
-VALUES
-  (7, 8, 33);
-INSERT INTO
-  `book_author` (`id`, `book_detail_id`, `author_id`)
-VALUES
-  (8, 9, 34);
-INSERT INTO
-  `book_author` (`id`, `book_detail_id`, `author_id`)
-VALUES
-  (9, 10, 35);
-INSERT INTO
-  `book_author` (`id`, `book_detail_id`, `author_id`)
-VALUES
   (10, 11, 36);
+INSERT INTO
+  `book_author` (`id`, `book_detail_id`, `author_id`)
+VALUES
+  (11, 11, 37);
+INSERT INTO
+  `book_author` (`id`, `book_detail_id`, `author_id`)
+VALUES
+  (12, 11, 38);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: book_detail
@@ -375,220 +343,16 @@ INSERT INTO
   )
 VALUES
   (
-    1,
-    'ss',
-    'ss',
-    '2020-05-01 00:00:00',
-    's2',
-    'physical',
-    NULL,
-    2,
-    2,
-    'swq',
-    'uploads/1589162180832developmentprocess.jpg',
-    'sqwsq',
-    'AVAILABLE',
-    '2020-05-11 00:00:00'
-  );
-INSERT INTO
-  `book_detail` (
-    `id`,
-    `isbn`,
-    `title`,
-    `datepublished`,
-    `publisher`,
-    `type`,
-    `e_book`,
-    `category_id`,
-    `genre_id`,
-    `location`,
-    `bookimg`,
-    `summary`,
-    `status`,
-    `created`
-  )
-VALUES
-  (
-    2,
-    'isbn',
-    'book title',
-    '2020-05-03 00:00:00',
-    'publisher name',
-    'physical',
-    NULL,
-    3,
-    1,
-    'location 1',
-    'uploads/1589162366744Turquoise Monster Cute Desktop Wallpaper.png',
-    'this is the summary',
-    'AVAILABLE',
-    '2020-05-11 00:00:00'
-  );
-INSERT INTO
-  `book_detail` (
-    `id`,
-    `isbn`,
-    `title`,
-    `datepublished`,
-    `publisher`,
-    `type`,
-    `e_book`,
-    `category_id`,
-    `genre_id`,
-    `location`,
-    `bookimg`,
-    `summary`,
-    `status`,
-    `created`
-  )
-VALUES
-  (
-    7,
-    'auto',
-    'auto',
-    '2020-11-19 00:00:00',
-    'dqw',
-    'physical',
-    NULL,
-    2,
-    NULL,
-    'qdw',
-    NULL,
-    'dqw',
-    'available',
-    '2020-11-27 02:09:47'
-  );
-INSERT INTO
-  `book_detail` (
-    `id`,
-    `isbn`,
-    `title`,
-    `datepublished`,
-    `publisher`,
-    `type`,
-    `e_book`,
-    `category_id`,
-    `genre_id`,
-    `location`,
-    `bookimg`,
-    `summary`,
-    `status`,
-    `created`
-  )
-VALUES
-  (
-    8,
-    'ebook',
-    'ebook',
-    '2020-11-06 00:00:00',
-    'dwq',
-    'digital',
-    NULL,
-    2,
-    NULL,
-    'dqw',
-    NULL,
-    'dwq',
-    'available',
-    '2020-11-27 02:39:36'
-  );
-INSERT INTO
-  `book_detail` (
-    `id`,
-    `isbn`,
-    `title`,
-    `datepublished`,
-    `publisher`,
-    `type`,
-    `e_book`,
-    `category_id`,
-    `genre_id`,
-    `location`,
-    `bookimg`,
-    `summary`,
-    `status`,
-    `created`
-  )
-VALUES
-  (
-    9,
-    'dqw',
-    'dqw',
-    '2020-10-30 00:00:00',
-    'dqw',
-    'digital',
-    NULL,
-    2,
-    2,
-    'dwq',
-    NULL,
-    'dwq',
-    'available',
-    '2020-11-27 02:42:08'
-  );
-INSERT INTO
-  `book_detail` (
-    `id`,
-    `isbn`,
-    `title`,
-    `datepublished`,
-    `publisher`,
-    `type`,
-    `e_book`,
-    `category_id`,
-    `genre_id`,
-    `location`,
-    `bookimg`,
-    `summary`,
-    `status`,
-    `created`
-  )
-VALUES
-  (
-    10,
-    'dqw',
-    'dwq',
-    '2020-10-30 00:00:00',
-    'edq',
-    'digital',
-    'uploads/ebooks/1606445063901LECTURE 1 Introduction.pdf',
-    2,
-    2,
-    'deqw',
-    NULL,
-    'edqw',
-    'available',
-    '2020-11-27 02:44:23'
-  );
-INSERT INTO
-  `book_detail` (
-    `id`,
-    `isbn`,
-    `title`,
-    `datepublished`,
-    `publisher`,
-    `type`,
-    `e_book`,
-    `category_id`,
-    `genre_id`,
-    `location`,
-    `bookimg`,
-    `summary`,
-    `status`,
-    `created`
-  )
-VALUES
-  (
     11,
     'IB-21312',
     'My Ebook',
     '2020-10-30 00:00:00',
-    'ebook publisher',
+    'ebook 22',
     'digital',
     'uploads/ebooks/1606457046452T04 - View and ViewGroup.pdf',
     12,
     4,
-    'floor 1',
+    'floor 3',
     'uploads/1606457046408bookcover.jpeg',
     'xdxx',
     'available',
@@ -688,6 +452,10 @@ INSERT INTO
   `category` (`id`, `name`, `book_detail_id`)
 VALUES
   (13, 'ws', NULL);
+INSERT INTO
+  `category` (`id`, `name`, `book_detail_id`)
+VALUES
+  (14, 'grewgg', NULL);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: genre
@@ -750,6 +518,15 @@ VALUES
 # DATA DUMP FOR TABLE: library_map
 # ------------------------------------------------------------
 
+INSERT INTO
+  `library_map` (`id`, `floor`, `name`, `image_url`)
+VALUES
+  (
+    7,
+    1,
+    'A',
+    'uploads/library_map/1606660378588thearsonistbook.jpg'
+  );
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: notification
@@ -792,7 +569,7 @@ VALUES
 INSERT INTO
   `user_role` (`id`, `user_id`, `role_id`)
 VALUES
-  (3, 3, 3);
+  (5, 4, 3);
 
 # ------------------------------------------------------------
 # DATA DUMP FOR TABLE: users
@@ -822,9 +599,9 @@ VALUES
     '2020-11-26 14:06:08',
     0,
     NULL,
-    NULL,
+    'uploads/1606657742367book3.png',
     '1home',
-    '111'
+    '122'
   );
 INSERT INTO
   `users` (
@@ -853,6 +630,34 @@ VALUES
     NULL,
     NULL,
     NULL
+  );
+INSERT INTO
+  `users` (
+    `id`,
+    `first_name`,
+    `last_name`,
+    `email`,
+    `password`,
+    `created`,
+    `active`,
+    `verification_hash`,
+    `profileimg`,
+    `address`,
+    `phonenum`
+  )
+VALUES
+  (
+    4,
+    'yann',
+    'ng',
+    'lordtocazwhite@gmail.com',
+    '$2b$10$YztKE5FaOg.lisXN.cBllOw8F/QHTKJX0xYynUjU96J9.TaVkVs.q',
+    '2020-11-29 13:50:37',
+    1,
+    '$2b$10$km6kKM6.lRhouQqFfNLmwursgIyFlmCYbUjHLcOoISurW6Is3rqNa',
+    'uploads/1606657913502thearsonistbook.jpg',
+    'dwqdwqd',
+    '0123'
   );
 
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
