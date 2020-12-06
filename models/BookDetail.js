@@ -15,6 +15,9 @@ module.exports = db.sequelize.define(
     title: {
       type: Sequelize.STRING,
     },
+    author: {
+      type: Sequelize.STRING,
+    },
     datepublished: {
       type: Sequelize.DATE,
     },
