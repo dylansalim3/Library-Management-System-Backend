@@ -39,20 +39,20 @@ exports.updateBookDetails = async (req, res) => {
         publisher: req.body.publisher,
         location: req.body.location,
     };
-    const author = await AuthorRepository.findAuthorByName(authorName).then(author => {
-        if (author) {
-            return author;
-        } else {
-            return AuthorRepository.createAuthor(authorName).then(author => {
-                return author;
-            }).catch(err => {
-                res.status(400).json({message: 'Add New Author Failed'});
-            })
-        }
-    });
+    // const author = await AuthorRepository.findAuthorByName(authorName).then(author => {
+    //     if (author) {
+    //         return author;
+    //     } else {
+    //         return AuthorRepository.createAuthor(authorName).then(author => {
+    //             return author;
+    //         }).catch(err => {
+    //             res.status(400).json({message: 'Add New Author Failed'});
+    //         })
+    //     }
+    // });
 
 
-    if (author) {
+    // if (author) {
         db.sequelize.transaction(t => {
             return BookDetailRepository.findBookDetailById(bookDetailId, {transaction: t}).then(bookDetail => {
                 bookDetail.title = req.body.title;
@@ -63,7 +63,7 @@ exports.updateBookDetails = async (req, res) => {
                 bookDetail.datepublished = req.body.datepublished;
                 bookDetail.publisher = req.body.publisher;
                 bookDetail.location = req.body.location;
-                bookDetail.addAuthor(author);
+                // bookDetail.addAuthor(author);
                 bookDetail.save();
                 return bookDetail;
                 // return BookAuthor.findOne({where: {book_detail_id: bookDetailId}, transaction: t}).then(bookAuthor => {
@@ -77,15 +77,15 @@ exports.updateBookDetails = async (req, res) => {
                 //     return res.json('Book Detail Updated Successfully');
                 // });
             });
-        }).then(res => {
+        }).then(result => {
             return res.json('Book Detail Updated Successfully');
         }).catch(err => {
             console.log(err);
             res.status(400).json({message: 'Book Detail Update Failed'});
         })
-    } else {
-        res.status(400).json({message: 'Author not found and cannot be created'});
-    }
+    // } else {
+    //     res.status(400).json({message: 'Author not found and cannot be created'});
+    // }
 
 }
 

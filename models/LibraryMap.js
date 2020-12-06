@@ -9,7 +9,7 @@ module.exports = db.sequelize.define(
             primaryKey: true,
             autoIncrement: true
         },
-        floor:{
+        floor_name:{
           type: Sequelize.INTEGER,
         },
         name:{

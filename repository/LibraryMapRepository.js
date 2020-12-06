@@ -10,7 +10,7 @@ exports.findLibraryMapByPk = (pk) => {
 }
 
 exports.findLibraryMapByFloorAndName = (floor, name) => {
-    return LibraryMap.findOne({where: {floor: floor, name: name}});
+    return LibraryMap.findOne({where: {floor_name: floor, name: name}});
 }
 
 exports.findOrCreateLibraryMap = (entry) => {

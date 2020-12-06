@@ -45,14 +45,15 @@ exports.restoreDatabase = (req, res) => {
             let files_imported = importer.getImported();
             res.json(`${files_imported.length} SQL file(s) imported.`);
         }).catch(async err => {
-            console.log(err.toString);
+            console.log(err.toString());
             await importer.import(path.join('migrations','backup.sql').toString()).then(result=>{
                 console.log("changes reverted");
                 res.status(500).json({error:"changes reverted"});
             }).catch(err => {
+                console.log(err.toString());
                 res.status(500).json({ error: "Error in restoring restore old data", message: err.toString() });
             });
-            res.status(500).json({ error: "Error in restoring database", message: err.toString() });
+            // res.status(500).json({ error: "Error in restoring database", message: err.toString() });
         });
     }).catch(err => {
         res.status(500).json({ error: "Error in backing up database", message: err.toString() });

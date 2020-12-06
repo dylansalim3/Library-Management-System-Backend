@@ -17,8 +17,8 @@ exports.findBookRequestByBookId = (bookId, options) => {
     return BookRequest.findOne({ where: { book_id: bookId }, options });
 }
 
-exports.findAllExtendBookRequestByUserId = (userId) => {
-    return BookRequest.findAll({ where: { user_id: userId, type: EXTEND } });
+exports.findAllProcessingExtendBookRequestByUserId = (userId) => {
+    return BookRequest.findAll({ where: { user_id: userId, type: EXTEND, status: PROCESSING } });
 }
 
 exports.findAllExtendBookRequestByUserIdAndBookId = (userId, bookId) => {
@@ -41,9 +41,10 @@ exports.findBookRequestByPk = (pk) => {
 }
 
 exports.updateBookRequestStatus = (bookRequestId, status, reasonReject) => {
+    console.log(reasonReject);
     return BookRequest.findOne({ where: { id: bookRequestId } }).then(bookRequest => {
         bookRequest.status = status;
-        bookRequest.reasonReject = reasonReject;
+        bookRequest.reject_reason = reasonReject;
         bookRequest.save();
         return bookRequest;
     });
