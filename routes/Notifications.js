@@ -12,4 +12,6 @@ notifications.post('/get-unread-notification-count',NotificationController.getUn
 
 notifications.post('/update-notification-to-read',NotificationController.updateNotificationToRead);
 
+notifications.post('/delete-notification',NotificationController.deleteNotification);
+
 module.exports = notifications;
