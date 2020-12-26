@@ -28,10 +28,10 @@ exports.uploadImageFile = multer({
 
 const SQLStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './migrations/')
+        cb(null, './migrations/backup_archive/')
     },
     filename: function (req, file, cb) {
-        cb(null, 'dump.sql');
+        cb(null, 'backup.zip');
     }
 });
 
@@ -46,10 +46,10 @@ const SQLFilter = (req, file, cb) => {
     }
 }
 
-exports.uploadSQLFile = multer({
+exports.uploadZipFile = multer({
     storage: SQLStorage,
     limits: {
-        fileSize: 1024 * 1024 * 10
+        fileSize: 1024 * 1024 * 100
     },
     // fileFilter: SQLFilter
 });
