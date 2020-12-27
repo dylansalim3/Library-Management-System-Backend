@@ -12,4 +12,6 @@ bookDetails.post('/update-book', BookDetailController.updateBookDetails);
 // haven tested
 bookDetails.post('/delete-book', BookDetailController.deleteBook)
 
+bookDetails.post('/get-book-recommendation', BookDetailController.getBookRecommendation);
+
 module.exports = bookDetails;
