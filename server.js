@@ -4,13 +4,14 @@ var bodyParser = require("body-parser");
 var app = express();
 var port = 5000;
 const fs = require('fs');
+const cron = require('node-cron');
 
 app.use(bodyParser.json());
 app.use(cors({
     origin: "*",
     allowedHeaders: "Origin, X-Requested-With, Content-Type, Accept",
 }));
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended: false}));
 
 
 if (process.env.NODE_ENV !== 'production') {
@@ -31,12 +32,12 @@ const storage = multer.diskStorage({
 })
 
 const ebookStorage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, './uploads/ebooks');
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + file.originalname);
-  },
+    destination: function (req, file, cb) {
+        cb(null, './uploads/ebooks');
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + file.originalname);
+    },
 });
 
 const fileFilter = (req, file, cb) => {
@@ -78,6 +79,7 @@ const Author = require('./routes/Author');
 const BookCategory = require('./routes/BookCategory');
 
 app.use('/uploads', express.static('uploads'));
+app.use('/migrations',express.static('migrations'));
 app.use('/users', Users);
 app.use('/books', Books);
 app.use('/book-details', BookDetails);
@@ -92,8 +94,8 @@ app.use('/notification', Notifications);
 app.use('/report', Reports);
 app.use('/dashboard', Dashboard);
 app.use('/book-request', BookRequests);
-app.use('/author',Author);
-app.use('/bookCategory',BookCategory);
+app.use('/author', Author);
+app.use('/bookCategory', BookCategory);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
@@ -102,8 +104,8 @@ app.post('/file', upload.single('file'), function (req, res, next) {
 });
 
 app.post('/file-ebook', ebookUpload.single('file'), function (req, res, next) {
-  const filepath = req.file.path;
-  res.send(filepath);
+    const filepath = req.file.path;
+    res.send(filepath);
 });
 
 
@@ -122,47 +124,60 @@ const notification = require('./models/Notification');
 const bookRequest = require('./models/BookRequest');
 const db = require('./database/db');
 
-book.belongsTo(bookDetail, { foriegnKey: 'book_detail_id', constraint: true, OnDelete: 'CASCADE' });
-bookDetail.hasMany(book, { foriegnKey: 'book_detail_id' });
+book.belongsTo(bookDetail, {foriegnKey: 'book_detail_id', constraint: true, OnDelete: 'CASCADE'});
+bookDetail.hasMany(book, {foriegnKey: 'book_detail_id'});
 
-borrowBook.belongsTo(book, { foreignKey: 'book_id', constraint: true, OnDelete: 'CASCADE' });
-book.hasMany(borrowBook, { foreignKey: 'book_id' });
+borrowBook.belongsTo(book, {foreignKey: 'book_id', constraint: true, OnDelete: 'CASCADE'});
+book.hasMany(borrowBook, {foreignKey: 'book_id'});
 
-borrowBook.belongsTo(user, { foreignKey: 'user_id', });
-user.hasMany(borrowBook, { foreignKey: 'user_id', });
+borrowBook.belongsTo(user, {foreignKey: 'user_id',});
+user.hasMany(borrowBook, {foreignKey: 'user_id',});
 
-borrowBookHistory.belongsTo(book, { foreignKey: 'book_id' });
-book.hasMany(borrowBookHistory, { foreignKey: 'book_id' });
+borrowBookHistory.belongsTo(book, {foreignKey: 'book_id'});
+book.hasMany(borrowBookHistory, {foreignKey: 'book_id'});
 
-borrowBookHistory.belongsTo(user, { foreignKey: 'user_id' });
-user.hasMany(borrowBookHistory, { foreignKey: 'user_id' });
+borrowBookHistory.belongsTo(user, {foreignKey: 'user_id'});
+user.hasMany(borrowBookHistory, {foreignKey: 'user_id'});
 
-bookDetail.belongsTo(genre, { foreignKey: 'genre_id' });
-genre.hasOne(bookDetail, { foreignKey: 'genre_id' });
+bookDetail.belongsTo(genre, {foreignKey: 'genre_id'});
+genre.hasOne(bookDetail, {foreignKey: 'genre_id'});
 
-bookDetail.belongsToMany(author, { through: "book_author", foreignKey: 'book_detail_id' });
-author.belongsToMany(bookDetail, { through: "book_author", foreign_key: 'author_id' });
+bookDetail.belongsToMany(author, {through: "book_author", foreignKey: 'book_detail_id'});
+author.belongsToMany(bookDetail, {through: "book_author", foreign_key: 'author_id'});
 
-user.belongsToMany(role, { through: "user_role", foreignKey: 'user_id' });
-role.belongsToMany(user, { through: "user_role", foreignKey: 'role_id' });
+user.belongsToMany(role, {through: "user_role", foreignKey: 'user_id'});
+role.belongsToMany(user, {through: "user_role", foreignKey: 'role_id'});
 
 bookDetail.hasOne(category);
 category.belongsTo(bookDetail);
 
-notification.belongsTo(user, { foreignKey: 'user_id', });
-user.hasMany(notification, { foreignKey: 'user_id', });
+notification.belongsTo(user, {foreignKey: 'user_id',});
+user.hasMany(notification, {foreignKey: 'user_id',});
 
-bookRequest.belongsTo(user, { foreignKey: 'user_id' });
-user.hasMany(bookRequest, { foreignKey: 'user_id' });
+bookRequest.belongsTo(user, {foreignKey: 'user_id'});
+user.hasMany(bookRequest, {foreignKey: 'user_id'});
 
-bookRequest.belongsTo(book, { foreignKey: 'book_id' });
-book.hasOne(bookRequest, { foreignKey: 'book_id' })
+bookRequest.belongsTo(book, {foreignKey: 'book_id'});
+book.hasOne(bookRequest, {foreignKey: 'book_id'})
 
-db.sequelize.sync({ logging: false });
+db.sequelize.sync({logging: false});
 
 const server = app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
 
-const { startSocketServer } = require('./utils/socket.util');
+const {startSocketServer} = require('./utils/socket.util');
 startSocketServer(server);
+
+const backupDatabaseService = require('./services/BackupDatabaseService');
+
+
+//cron job executed weekly saturday at 8.05am, backup database
+cron.schedule('5 8 * * 6', () => {
+    const currentDate = new Date();
+    const currentDay = currentDate.getDay();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    backupDatabaseService.sendBackupDatabaseEmail(currentDay,currentMonth,currentYear);
+});
+

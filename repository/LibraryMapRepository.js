@@ -10,13 +10,22 @@ exports.findLibraryMapByPk = (pk) => {
 }
 
 exports.findLibraryMapByFloorAndName = (floor, name) => {
-    return LibraryMap.findOne({where: {floor_name: floor, name: name}});
+    return LibraryMap.findOne({ where: { floor_name: floor, name: name } });
 }
 
 exports.findOrCreateLibraryMap = (entry) => {
-    return LibraryMap.findOrCreate({where: entry});
+    return LibraryMap.findOrCreate({ where: entry });
 }
 
-exports.deleteLibraryMapByPk = (pk) =>{
-    return LibraryMap.destroy({where: {id: pk}});
+exports.updateLibraryMapDetail = (id, floor, name) => {
+    return LibraryMap.findByPk(id).then(libraryMap => {
+        libraryMap.floor_name = floor;
+        libraryMap.name = name;
+        libraryMap.save();
+        return libraryMap;
+    });
+}
+
+exports.deleteLibraryMapByPk = (pk) => {
+    return LibraryMap.destroy({ where: { id: pk } });
 }

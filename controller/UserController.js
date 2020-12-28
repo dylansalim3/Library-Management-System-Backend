@@ -415,7 +415,7 @@ const createUser = async (req, res) => {
                         }).then(async (userResult) => {
                             console.log(userResult);
                             const verification_hash = userResult.verification_hash;
-                            const registrationLink = registrationLinkPrefix + '/' + verification_hash;
+                            const registrationLink = "localhost:3000" + '/' + verification_hash;
                             const { subject, text } = buildVerificationEmail(email, registrationLink);
                             await sendEmail(email, subject, text, res);
 
