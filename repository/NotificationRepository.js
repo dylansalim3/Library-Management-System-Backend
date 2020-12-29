@@ -31,6 +31,16 @@ exports.updateNotificationToRead = (id) => {
     });
 }
 
+exports.updateAllNotificationsToRead = (userId) => {
+    return Notification.findAll({ where: { user_id:userId } }).then(notifications => {
+        notifications.forEach(notification=>{
+            notification.unread = false;
+            notification.save();
+        });
+        return notifications;
+    });
+}
+
 exports.deleteNotification = (id) => {
     return Notification.destroy({ where: { id } });
 }

@@ -24,6 +24,31 @@ exports.getLatestBook = (req, res) => {
     });
 }
 
+exports.getBookRecommendation = (req, res) => {
+    const {userId} = req.body;
+    try {
+        BorrowBookHistoryRepository.findAllBorrowBookHistoryByUserId(userId).then(borrowBookHistories => {
+            if(borrowBookHistories===undefined){
+                res.status(404).json({message:"No matching history available"})
+            }else{
+                const genreIdList = borrowBookHistories.map(borrowBookHistory => borrowBookHistory.book.book_detail.genre_id);
+
+                Promise.all(genreIdList.map(async genreId => {
+                    return await BookDetailRepository.getBookDetails(null, null, genreIdList);
+                }))
+                    .then(bookDetails => {
+                    res.json(bookDetails.flat());
+                });
+
+            }
+
+        });
+    } catch (err) {
+        res.status(500).json({message: 'Unable to retrieve book recommendation'});
+    }
+
+}
+
 //haven tested
 exports.updateBookDetails = async (req, res) => {
     const bookDetailId = req.body.id;
@@ -53,36 +78,36 @@ exports.updateBookDetails = async (req, res) => {
 
 
     // if (author) {
-        db.sequelize.transaction(t => {
-            return BookDetailRepository.findBookDetailById(bookDetailId, {transaction: t}).then(bookDetail => {
-                bookDetail.title = req.body.title;
-                bookDetail.isbn = req.body.isbn;
-                bookDetail.genre_id = req.body.genreId;
-                bookDetail.bookimg = req.body.bookimg;
-                bookDetail.summary = req.body.summary;
-                bookDetail.datepublished = req.body.datepublished;
-                bookDetail.publisher = req.body.publisher;
-                bookDetail.location = req.body.location;
-                // bookDetail.addAuthor(author);
-                bookDetail.save();
-                return bookDetail;
-                // return BookAuthor.findOne({where: {book_detail_id: bookDetailId}, transaction: t}).then(bookAuthor => {
-                //     console.log(bookAuthor.author_id, authorId);
-                //     if (bookAuthor && bookAuthor.author_id !== authorId) {
-                //         console.log('updateeee');
-                //         bookAuthor.author_id = authorId;
-                //         bookAuthor.save();
-                //         return res.json('Book Detail Updated Successfully');
-                //     }
-                //     return res.json('Book Detail Updated Successfully');
-                // });
-            });
-        }).then(result => {
-            return res.json('Book Detail Updated Successfully');
-        }).catch(err => {
-            console.log(err);
-            res.status(400).json({message: 'Book Detail Update Failed'});
-        })
+    db.sequelize.transaction(t => {
+        return BookDetailRepository.findBookDetailById(bookDetailId, {transaction: t}).then(bookDetail => {
+            bookDetail.title = req.body.title;
+            bookDetail.isbn = req.body.isbn;
+            bookDetail.genre_id = req.body.genreId;
+            bookDetail.bookimg = req.body.bookimg;
+            bookDetail.summary = req.body.summary;
+            bookDetail.datepublished = req.body.datepublished;
+            bookDetail.publisher = req.body.publisher;
+            bookDetail.location = req.body.location;
+            // bookDetail.addAuthor(author);
+            bookDetail.save();
+            return bookDetail;
+            // return BookAuthor.findOne({where: {book_detail_id: bookDetailId}, transaction: t}).then(bookAuthor => {
+            //     console.log(bookAuthor.author_id, authorId);
+            //     if (bookAuthor && bookAuthor.author_id !== authorId) {
+            //         console.log('updateeee');
+            //         bookAuthor.author_id = authorId;
+            //         bookAuthor.save();
+            //         return res.json('Book Detail Updated Successfully');
+            //     }
+            //     return res.json('Book Detail Updated Successfully');
+            // });
+        });
+    }).then(result => {
+        return res.json('Book Detail Updated Successfully');
+    }).catch(err => {
+        console.log(err);
+        res.status(400).json({message: 'Book Detail Update Failed'});
+    })
     // } else {
     //     res.status(400).json({message: 'Author not found and cannot be created'});
     // }
@@ -117,3 +142,5 @@ exports.deleteBook = async (req, res) => {
 
 
 }
+
+

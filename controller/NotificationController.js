@@ -44,6 +44,15 @@ exports.updateNotificationToRead = (req, res) => {
     })
 }
 
+exports.updateAllNotificationsToRead = (req, res) => {
+    const { userId } = req.body;
+    NotificationRepository.updateAllNotificationsToRead(userId).then(result => {
+        res.json(result);
+    }).catch(err => {
+        res.status(500).json({ err: err.toString() });
+    })
+}
+
 exports.deleteNotification = (req, res) => {
     const { id } = req.body;
     NotificationRepository.deleteNotification(id).then(result => {

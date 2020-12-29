@@ -49,7 +49,7 @@ exports.findBorrowBooksByUserIdAndBookId = (req, res) => {
 }
 
 exports.createExtendBookRequest = async (req, res) => {
-    const { userId, borrowBookIdList, url } = req.body;
+    const { userId, borrowBookIdList, url, reason } = req.body;
     const type = EXTEND;
     const status = PROCESSING;
     try {
@@ -57,15 +57,16 @@ exports.createExtendBookRequest = async (req, res) => {
         for (let borrowBookId of borrowBookIdList) {
             const borrowBook = await BorrowBookRepository.findBorrowBookByPk(borrowBookId);
             const bookId = borrowBook.book_id;
-            
+
             const newBookRequest = {
                 user_id: userId,
                 book_id: bookId,
                 type,
                 status,
+                reason,
             }
             newBookRequests.push(newBookRequest);
-            
+
         }
         BookRequestRepository.bulkCreateBookRequest(newBookRequests).then(async result => {
             const allAdminUser = await UserRepository.findAllUserByRole(ADMIN);
@@ -79,11 +80,11 @@ exports.createExtendBookRequest = async (req, res) => {
                     allPromises.push(NotificationRepository.createNotification({ userId, title, desc, url, enablePush: true, priority: 'HIGH', thumbnailUrl }));
                 });
             }
-            Promise.all(allPromises).then(values=>{
+            Promise.all(allPromises).then(values => {
                 res.json({ success: true });
             });
         });
-        
+
     } catch (err) {
         res.status(500).json({ err: err.toString() })
     }

@@ -14,6 +14,7 @@ exports.addBook = async (req, res) => {
         publisher: req.body.publisher,
         type: req.body.type,
         e_book: req.body.ebook,
+        author: req.body.author,
         category_id: req.body.category,
         // genre_id: req.body.genre,
         summary: req.body.summary,
