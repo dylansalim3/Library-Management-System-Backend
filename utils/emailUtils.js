@@ -2,12 +2,12 @@ const nodemailer = require('nodemailer');
 const env = process.env;
 const {google} = require('googleapis');
 
-const sendEmail = async (receiverEmail, emailSubject, html, res, {attachments}) => {
-    const emailService = env.email_service;
-    const senderEmail = env.sender_email;
-    const clientId = env.client_id;
-    const clientSecret = env.client_secret;
-    const refreshToken = env.refresh_token;
+const sendEmail = async (receiverEmail, emailSubject, html,res) => {
+    const emailService = env.EMAIL_SERVICE;
+    const senderEmail = env.SENDER_EMAIL;
+    const clientId = env.CLIENT_ID;
+    const clientSecret = env.CLIENT_SECRET;
+    const refreshToken = env.REFRESH_TOKEN;
     const OAuth2 = google.auth.OAuth2;
 
     //client_id and client_secret
