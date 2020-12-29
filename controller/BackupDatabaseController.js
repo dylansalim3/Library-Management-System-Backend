@@ -52,7 +52,7 @@ exports.restoreDatabase = (req, res) => {
     try {
 
         zip.on('error', err => {
-            throw err;
+            res.status(500).json({error: "Error in backing up database", message: err.toString()});
         });
 
         zip.on('ready', () => {
@@ -62,14 +62,15 @@ exports.restoreDatabase = (req, res) => {
 
 
                 if (err) {
-                    throw err;
+                    console.log("error in extracting" + err);
+                    res.status(500).json({error: "Error in backing up database", message: err.toString()});
                 } else {
                     fse.copySync(path.join(uploadedArchiveFolder, 'uploads'),
                         uploadsDirectory, {overwrite: true},
                         function (err) {
                             if (err) {
                                 //error
-                                throw err;
+                                res.status(500).json({error: "Error in backing up database", message: err.toString()});
                             }
                         });
                     dumpSqlFile({dumpToFile: path.join('migrations', initialDumpSqlFileName).toString()})
@@ -89,7 +90,10 @@ exports.restoreDatabase = (req, res) => {
                                     res.status(500).json({error: "changes reverted"});
                                 }).catch(err => {
                                     console.log(err.toString());
-                                    res.status(500).json({error: "Error in restoring restore old data", message: err.toString()});
+                                    res.status(500).json({
+                                        error: "Error in restoring restore old data",
+                                        message: err.toString()
+                                    });
                                 });
                             });
                         })
