@@ -162,6 +162,10 @@ book.hasOne(bookRequest, {foreignKey: 'book_id'})
 
 db.sequelize.sync({logging: false});
 
+process.on('uncaughtException', (error) => {
+    console.log(error);
+});
+
 const server = app.listen(port, () => {
     console.log("Server is running on part: " + port)
 });
@@ -171,6 +175,11 @@ startSocketServer(server);
 
 const backupDatabaseService = require('./services/BackupDatabaseService');
 
+const ReportService = require('./services/ReportService');
+const ReportChartService = require('./services/ReportChartService');
+
+// ReportService.createMonthlyReport();
+// ReportChartService.generateCharts();
 
 //cron job executed weekly saturday at 8.05am, backup database
 cron.schedule('5 8 * * 6', () => {

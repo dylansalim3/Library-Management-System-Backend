@@ -3,11 +3,13 @@ const chartUtil = require('./../utils/chart.util');
 const UserRepository = require('./../repository/UserRepository');
 const BorrowBookRepository = require('./../repository/BorrowBookRepository');
 const BorrowBookHistoryRepository = require('./../repository/BorrowBookHistoryRepository');
-const { BORROWED_MAX, OVERDUE_MAX, ADDED_MAX, RENEWED_MAX } = require('./../constant/constant');
+const {BORROWED_MAX, OVERDUE_MAX, ADDED_MAX, RENEWED_MAX} = require('./../constant/constant');
 const chart = require('highcharts-export-server/lib/chart');
+const ReportChartService = require('./../services/ReportChartService');
+const ReportService = require('./../services/ReportService');
 
 exports.getMonthlyReport = async (req, res) => {
-    let { month, year } = req.body;
+    let {month, year} = req.body;
 
     if (month === undefined || month < 1 || month > 12) {
         month = new Date().getMonth();
@@ -15,6 +17,7 @@ exports.getMonthlyReport = async (req, res) => {
     if (year === undefined || year < 2020) {
         year = new Date().getFullYear;
     }
+    let hasError = false;
 
     // createNewUserChart().then(result => {
     //     createAllUserChart().then(result => {
@@ -22,7 +25,25 @@ exports.getMonthlyReport = async (req, res) => {
     //     });
     // });
 
-    await createNewUserChart();
+    // await createNewUserChart(12, 2020, error => {
+    //     hasError = true;
+    // });
+    // await createAllUserChart(error => {
+    //     hasError = true;
+    // });
+    //
+    // await createNumberOfBorrowedBookChart(12,2020,error=>{
+    //     hasError = true;
+    // })
+    ReportChartService.generateCharts();
+    ReportService.createMonthlyReport();
+
+
+    if(hasError){
+        res.json({msg:"failed"});
+    }else{
+        res.json({msg: "success"});
+    }
     // createAllUserChart().then(result=>{
     //     res.json(result);
     // })
@@ -68,9 +89,9 @@ exports.getMonthlyReport = async (req, res) => {
     // })
 }
 
-const createNewUserChart = async (month, year) => {
+const createNewUserChart = async (month, year, error) => {
 
-    const { studentCountPromise, teacherCountPromise } = UserRepository.getNewUserCount(month, year);
+    const {studentCountPromise, teacherCountPromise} = UserRepository.getNewUserCount(month, year);
 
     const studentCount = await studentCountPromise;
     const teacherCount = await teacherCountPromise;
@@ -86,23 +107,26 @@ const createNewUserChart = async (month, year) => {
         }
     ];
 
+    console.log(chartData);
+
     const chartDetails = constructPieChartOptions(chartData, 'New Users');
 
     console.log(chartDetails);
 
     chartUtil.createChart(chartDetails, 'newUsers.png', (response, err) => {
         if (err) {
-            throw Error(err.toString());
+            error(err);
+        }else{
+            return {studentCount, teacherCount};
         }
-        return { studentCount, teacherCount };
     })
 
-    
+
 }
 
-const createAllUserChart = async () => {
+const createAllUserChart = async (error) => {
 
-    const { studentCountPromise, teacherCountPromise } = UserRepository.getTotalUserCount();
+    const {studentCountPromise, teacherCountPromise} = UserRepository.getTotalUserCount();
 
     const studentCount = await studentCountPromise;
     const teacherCount = await teacherCountPromise;
@@ -122,15 +146,15 @@ const createAllUserChart = async () => {
 
     chartUtil.createChart(chartDetails, 'totalUsers.png', (response, err) => {
         if (err) {
-            throw Error(err.toString());
+            error(err);
         }
-        return { studentCount, teacherCount };
+        return {studentCount, teacherCount};
     });
 
-    
+
 }
 
-const createNumberOfBorrowedBookChart = async (month, year) => {
+const createNumberOfBorrowedBookChart = async (month, year, error) => {
     const booksCurrentBorrowed = await BorrowBookRepository.getCurrentMonthBorrowedBookCount();
     const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getCurrentMonthBorrowedBook();
     const totalBookBorrowedCount = booksCurrentBorrowed + booksHistoryCurrentBorrowed;
@@ -152,7 +176,7 @@ const createNumberOfBorrowedBookChart = async (month, year) => {
 
     chartUtil.createChart(chartDetails, 'numOfBorrowedBooks.png', (response, err) => {
         if (err) {
-            throw Error(err.toString());
+            error(err);
         }
     })
 }
@@ -208,7 +232,6 @@ const constructBarChartOptions = (categories, chartData, titleText, xAxisText, y
         }
     }
 }
-
 
 
 const constructPieChartOptions = (chartData, titleText) => {
