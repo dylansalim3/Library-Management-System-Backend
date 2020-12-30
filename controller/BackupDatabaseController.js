@@ -1,67 +1,116 @@
 const path = require("path");
-const fs = require('fs');
+const fse = require('fs-extra');
+const StreamZip = require('node-stream-zip');
 
 const db = require('../database/db');
 const mysqldump = require('mysqldump');
 const Importer = require("mysql-import");
 
-const tableName = process.env.db_table_name;
-const userName = process.env.db_username;
-const password = process.env.db_password;
-const host = process.env.db_host;
-const port = process.env.db_port;
+const tableName = process.env.DB_TABLE_NAME;
+const userName = process.env.DB_USERNAME;
+const password = process.env.DB_PASSWORD;
+const host = process.env.DB_HOST;
+const port = process.env.DB_PORT;
 
-const importer = new Importer({ host: host, port: port, user: userName, password: password, database: tableName });
+const backupDatabaseService = require('../services/BackupDatabaseService');
+
+const importer = new Importer({host: host, port: port, user: userName, password: password, database: tableName});
 
 exports.backupDatabase = (req, res) => {
-    const fileName = 'dump.sql';
-    const options = {
-        headers: {
-            'x-timestamp': Date.now(),
-            'x-sent': true,
-            'content-disposition': "attachment; filename=" + fileName, // gets ignored
-            'content-type': "text/csv"
-        }
+    try {
+        backupDatabaseService.backupDatabase(res, () => {
+            console.log("Completed")
+        })
+    } catch (err) {
+        res.status(500).json({error: `Error occurred while migrating ${err.toString()}`});
     }
-    dumpSqlFile({ dumpToFile: './migrations/dump.sql' }).then(result => {
-        const filePath = `${__dirname}/../migrations/${fileName}`;
-        res.download(
-            filePath,
-            fileName,
-            options
-        );
-    }).catch(err => {
-        res.status(500).json({ error: `Error occurred while migrating ${err.toString()}` });
+}
+
+exports.sendBackupEmail = (req, res) => {
+    const currentDate = new Date();
+    const currentDay = currentDate.getDay();
+    const currentMonth = currentDate.getMonth();
+    const currentYear = currentDate.getFullYear();
+    backupDatabaseService.sendBackupDatabaseEmail(currentDay, currentMonth, currentYear).then(result => {
+        res.json({msg: "success"});
     });
 }
 
 exports.restoreDatabase = (req, res) => {
     const file = req.file;
-    dumpSqlFile({ dumpToFile: path.join('migrations','backup.sql').toString() }).then(async result => {
-        await db.sequelize.dropAllSchemas().catch(err => {
-            res.status(500).json({ error: "Error in dropping databases", message: err.toString() });
+    const zip = new StreamZip({
+        file: file.path,
+        storeEntries: true
+    });
+
+    const uploadedArchiveFolder = path.join(path.dirname(require.main.filename || process.main.filename), 'migrations', 'uploaded_archive', 'extracted');
+    const uploadsDirectory = path.join(path.dirname(require.main.filename || process.main.filename), 'uploads');
+
+    const backupSqlFileName = 'backup.sql';
+    const initialDumpSqlFileName = 'dump.sql';
+
+    try {
+
+        zip.on('error', err => {
+            res.status(500).json({error: "Error in backing up database", message: err.toString()});
         });
-        importer.import(path.join('migrations','dump.sql').toString()).then(() => {
-            let files_imported = importer.getImported();
-            res.json(`${files_imported.length} SQL file(s) imported.`);
-        }).catch(async err => {
-            console.log(err.toString());
-            await importer.import(path.join('migrations','backup.sql').toString()).then(result=>{
-                console.log("changes reverted");
-                res.status(500).json({error:"changes reverted"});
-            }).catch(err => {
-                console.log(err.toString());
-                res.status(500).json({ error: "Error in restoring restore old data", message: err.toString() });
+
+        zip.on('ready', () => {
+            zip.extract(null, uploadedArchiveFolder, err => {
+
+                zip.close();
+
+
+                if (err) {
+                    console.log("error in extracting" + err);
+                    res.status(500).json({error: "Error in backing up database", message: err.toString()});
+                } else {
+                    fse.copySync(path.join(uploadedArchiveFolder, 'uploads'),
+                        uploadsDirectory, {overwrite: true},
+                        function (err) {
+                            if (err) {
+                                //error
+                                res.status(500).json({error: "Error in backing up database", message: err.toString()});
+                            }
+                        });
+                    dumpSqlFile({dumpToFile: path.join('migrations', initialDumpSqlFileName).toString()})
+                        .then(async result => {
+                            await db.sequelize.dropAllSchemas().catch(err => {
+                                res.status(500).json({error: "Error in dropping databases", message: err.toString()});
+                            });
+                            console.log("dumped");
+
+                            importer.import(path.join(uploadedArchiveFolder, backupSqlFileName).toString()).then(() => {
+                                let files_imported = importer.getImported();
+                                res.json(`${files_imported.length} SQL file(s) imported.`);
+                            }).catch(async err => {
+                                console.log(err.toString());
+                                await importer.import(path.join('migrations', initialDumpSqlFileName).toString()).then(result => {
+                                    console.log("changes reverted");
+                                    res.status(500).json({error: "changes reverted"});
+                                }).catch(err => {
+                                    console.log(err.toString());
+                                    res.status(500).json({
+                                        error: "Error in restoring restore old data",
+                                        message: err.toString()
+                                    });
+                                });
+                            });
+                        })
+                }
             });
-            // res.status(500).json({ error: "Error in restoring database", message: err.toString() });
         });
-    }).catch(err => {
-        res.status(500).json({ error: "Error in backing up database", message: err.toString() });
-    })
+
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({error: "Error in backing up database", message: err.toString()});
+    }
+
 
 }
 
-const dumpSqlFile = ({ dumpToFile }) => {
+const dumpSqlFile = ({dumpToFile}) => {
     return mysqldump({
         connection: {
             host: host,

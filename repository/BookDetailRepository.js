@@ -25,7 +25,7 @@ exports.getThreeLatestBook = () => {
     return BookDetail.findAll({
         include: [Genre, Book, Author],
         limit: 3,
-        order: [['datepublished', 'DESC']]
+        order: [['created', 'DESC']]
     }).map(book => {
         if (book.authors.length > 0) {
             book['author'] = book.authors[0].name;
