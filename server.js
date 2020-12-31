@@ -179,7 +179,7 @@ const ReportService = require('./services/ReportService');
 const ReportChartService = require('./services/ReportChartService');
 
 // ReportService.createMonthlyReport();
-// ReportChartService.generateCharts();
+ReportChartService.generateCharts();
 
 //cron job executed weekly saturday at 8.05am, backup database
 cron.schedule('5 8 * * 6', () => {

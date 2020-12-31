@@ -54,6 +54,10 @@ exports.getCurrentMonthBorrowedBookCount = () => {
     return BorrowBook.count({ where: (Sequelize.fn('month', Sequelize.col('start_date')), new Date().getMonth()) });
 }
 
+exports.getTotalOverdueBooksCount = () => {
+    return BorrowBook.count({ where: { due_date: { $lt: new Date() } } });
+}
+
 exports.extendDueDate = (bookId, userId, newDueDate) => {
     return BorrowBook.findOne({ where: { book_id: bookId, user_id: userId } }).then(borrowBook => {
         if (!borrowBook) {
