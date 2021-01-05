@@ -6,6 +6,8 @@ borrowBooks.post('/add-borrow-book', BorrowBookController.addBorrowBook);
 
 borrowBooks.post('/find-all-borrowed-books', BorrowBookController.findBorrowedBooksByUserId);
 
-borrowBooks.post('/extend-expiry-date',BorrowBookController.extendExpiryDate);
+borrowBooks.post('/extend-expiry-date', BorrowBookController.extendExpiryDate);
+
+borrowBooks.post('/top-five', BorrowBookController.getTopFiveBooksBorrowed);
 
 module.exports = borrowBooks;

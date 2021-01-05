@@ -18,14 +18,19 @@ exports.addBorrowBook = async (req, res) => {
     });
 
     if (!userExist) {
-        res.status(400).json({ message: "User does not exist" })
+        res.status(400).json({message: "User does not exist"})
     } else if (!isBookAvailable) {
-        res.status(400).json({ message: "Book is not available" })
+        res.status(400).json({message: "Book is not available"})
     } else {
 
         BorrowBookRepository.findBorrowBookCountByUserId(userId).then(count => {
             if (count < 3) {
-                BorrowBookRepository.createBorrowBook({ start_date: startDate, due_date: dueDate, book_id: bookId, user_id: userId })
+                BorrowBookRepository.createBorrowBook({
+                    start_date: startDate,
+                    due_date: dueDate,
+                    book_id: bookId,
+                    user_id: userId
+                })
                     .then(borrowBook => {
                         return BookRepository.findBookById(bookId).then(book => {
                             book.status = 'UNAVAILABLE';
@@ -36,14 +41,14 @@ exports.addBorrowBook = async (req, res) => {
                     });
 
             } else {
-                res.status(400).json({ message: "More than 3 books borrowed by this student" });
+                res.status(400).json({message: "More than 3 books borrowed by this student"});
             }
         });
     }
 }
 
 exports.findBorrowedBooksByUserId = (req, res) => {
-    const { userId } = req.body;
+    const {userId} = req.body;
     BorrowBookRepository.findAllBorrowBook(userId).then(result => {
         const mappedBorrowBookResults = result.map(result => {
             return {
@@ -59,15 +64,23 @@ exports.findBorrowedBooksByUserId = (req, res) => {
         });
         res.json(mappedBorrowBookResults);
     }).catch(err => {
-        res.status(500).json({ err: err.toString() });
+        res.status(500).json({err: err.toString()});
     });
 }
 
 exports.extendExpiryDate = (req, res) => {
-    const { borrowBookId, newDueDate } = req.body;
+    const {borrowBookId, newDueDate} = req.body;
     BorrowBookRepository.extendDueDateByBorrowBookId(borrowBookId, newDueDate).then(result => {
-        res.json({ success: true });
+        res.json({success: true});
     }).catch(err => {
-        res.status(500).json({ err: err.toString() });
+        res.status(500).json({err: err.toString()});
+    });
+}
+
+exports.getTopFiveBooksBorrowed = (req, res) => {
+    BorrowBookRepository.getTopFiveBooksBorrowed().then(result=>{
+        res.json(result);
+    }).catch(err => {
+        res.status(500).json({err: err.toString()});
     });
 }

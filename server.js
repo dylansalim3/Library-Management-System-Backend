@@ -79,7 +79,8 @@ const Author = require('./routes/Author');
 const BookCategory = require('./routes/BookCategory');
 
 app.use('/uploads', express.static('uploads'));
-app.use('/migrations',express.static('migrations'));
+app.use('/migrations', express.static('migrations'));
+app.use('/report', express.static('report'));
 app.use('/users', Users);
 app.use('/books', Books);
 app.use('/book-details', BookDetails);
@@ -179,7 +180,7 @@ const ReportService = require('./services/ReportService');
 const ReportChartService = require('./services/ReportChartService');
 
 // ReportService.createMonthlyReport();
-ReportChartService.generateCharts();
+// ReportChartService.generateCharts();
 
 //cron job executed weekly saturday at 8.05am, backup database
 cron.schedule('5 8 * * 6', () => {
@@ -187,6 +188,6 @@ cron.schedule('5 8 * * 6', () => {
     const currentDay = currentDate.getDay();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
-    backupDatabaseService.sendBackupDatabaseEmail(currentDay,currentMonth,currentYear);
+    backupDatabaseService.sendBackupDatabaseEmail(currentDay, currentMonth, currentYear);
 });
 

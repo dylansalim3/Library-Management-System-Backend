@@ -7,7 +7,15 @@ const headerColor = "#203864";
 const headerRibbonColor = "#8497B0";
 const subheaderColor = "#dae3f3";
 
-exports.createMonthlyReport = () => {
+exports.createMonthlyReport = ({
+                                   allUsersBase64,
+                                   newUsersBase64,
+                                   numberOfBooksBorrowedDoughnutBase64,
+                                   overdueBooksBase64,
+                                   addedBooksBase64,
+                                   barChartBase64,
+                                   topFiveBorrowedBooks, month, year
+                               }) => {
     const doc = new jsPDF();
     const width = doc.internal.pageSize.getWidth();
     const height = doc.internal.pageSize.getHeight();
@@ -39,12 +47,10 @@ exports.createMonthlyReport = () => {
 
     //User Distribution Data
     doc.text("New User", width / 6, 63);
-    const newUserData = transformFileToBase64Uri('./uploads/generated_charts/newUsers.png', mime);
-    doc.rect(dataX, 66, 90, 60);
-    // doc.addImage(newUserData, 10, 66,80,50);
+    doc.addImage(allUsersBase64, dataX + 15, 66, 60, 60);
 
     doc.text("Users", 4 * (width / 6) + 7, 63);
-    doc.rect((width / 2) + 7, 66, 90, 60);
+    doc.addImage(newUsersBase64, (width / 2) + 7 + 15, 66, 60, 60);
 
 
     //Dashboard Header
@@ -58,15 +64,15 @@ exports.createMonthlyReport = () => {
     const dashboardY = 133 + 20;
 
     // First item
-    constructDashboardItem(doc, dataX, dashboardY, ['No. of', 'books', 'borrowed', 'borrowed'])
+    constructDashboardItem(doc, dataX, dashboardY, ['No. of', 'books', 'borrowed', 'borrowed'], numberOfBooksBorrowedDoughnutBase64)
 
     // Second item
     const secondDataX = dataX + 70;
-    constructDashboardItem(doc, secondDataX, dashboardY, ['No. of', 'books', 'overdue'])
+    constructDashboardItem(doc, secondDataX, dashboardY, ['No. of', 'books', 'overdue'], overdueBooksBase64)
 
     // Third item
     const thirdDataX = secondDataX + 70;
-    constructDashboardItem(doc, thirdDataX, dashboardY, ['No. of', 'books', 'added'])
+    constructDashboardItem(doc, thirdDataX, dashboardY, ['No. of', 'books', 'added'], addedBooksBase64)
 
     // Books Borrowed Header
     const booksBorrowedDistributionY = dashboardY + 30 + marginWithPreviousElement;
@@ -75,16 +81,13 @@ exports.createMonthlyReport = () => {
     constructSubHeader(doc, booksBorrowedDistributionY, booksBorrowedIconUri, booksBorrowedDistributionHeaderText);
 
     // Top 5 borrowed books table
+    const bodyData = topFiveBorrowedBooks.map((element, index) => [index, element.title, element.author, element.count]);
     doc.autoTable({
-        head: [['Name', 'Email', 'Country']],
-        body: [
-            ['David', 'david@example.com', 'Sweden'],
-            ['Castille', 'castille@example.com', 'Spain'],
-            ['Castille', 'castille@example.com', 'Spain'],
-            ['Castille', 'castille@example.com', 'Spain'],
-            ['Castille', 'castille@example.com', 'Spain'],
-            // ...
-        ],
+        head: [['No.', 'Title', 'Author', 'Count']],
+        body:
+        bodyData
+        // ...
+        ,
         foot: ['here'],
         startY: booksBorrowedDistributionY + 10 + marginWithPreviousElement + marginWithPreviousElement,
         tableWidth: 'wrap',
@@ -93,7 +96,13 @@ exports.createMonthlyReport = () => {
     });
 
     const topBookBorrowedIconUri = transformFileToBase64Uri('./assets/icons/bookmark.png', mime);
-    doc.addImage({imageData: topBookBorrowedIconUri, x: dataX + 10, y: doc.autoTable.previous.finalY + 6, width: 6, height: 6});
+    doc.addImage({
+        imageData: topBookBorrowedIconUri,
+        x: dataX + 10,
+        y: doc.autoTable.previous.finalY + 6,
+        width: 6,
+        height: 6
+    });
     doc.setFontSize(12);
     doc.text("Top 5 Books Borrowed", dataX + 20, doc.autoTable.previous.finalY + 10);
 
@@ -102,15 +111,21 @@ exports.createMonthlyReport = () => {
     doc.rect(width / 2, booksBorrowedDistributionY + 10 + marginWithPreviousElement, 0.25, 80, 'F');
 
     // Bar chart (No of books against month)
-    doc.rect((width / 2) + 7, booksBorrowedDistributionY + 10 + marginWithPreviousElement + marginWithPreviousElement, 90, 60);
+    doc.addImage(barChartBase64, (width / 2) + 7, booksBorrowedDistributionY + 10 + marginWithPreviousElement + marginWithPreviousElement, 90, 60);
 
-    const barChartFinalY = booksBorrowedDistributionY + 10 + marginWithPreviousElement + marginWithPreviousElement +60;
+    const barChartFinalY = booksBorrowedDistributionY + 10 + marginWithPreviousElement + marginWithPreviousElement + 60;
     const bookBorrowedBarChartIconUri = transformFileToBase64Uri('./assets/icons/library.png', mime);
 
-    doc.addImage({imageData: bookBorrowedBarChartIconUri, x: (width / 2) + 7 + 10, y: barChartFinalY + 3, width: 6, height: 6});
+    doc.addImage({
+        imageData: bookBorrowedBarChartIconUri,
+        x: (width / 2) + 7 + 10,
+        y: barChartFinalY + 3,
+        width: 6,
+        height: 6
+    });
     doc.setFontSize(12);
-    doc.text("Top 5 Books Borrowed", (width / 2) + 7 + 20, barChartFinalY + 7);
-    doc.save("a4.pdf");
+    doc.text("No. of Books Borrowed Against Month", (width / 2) + 7 + 20, barChartFinalY + 7);
+    return doc.save(`./report/report-${month + 1}${year}.pdf`, {returnPromise: true});
 }
 
 const constructSubHeader = (doc, userDistributionY, userIconUri, headerText) => {
@@ -132,7 +147,7 @@ const constructDashboardItem = (doc, dataX, dashboardY, descList, imgUri) => {
     const imgSize = 30;
     const textMarginLeft = 5;
 
-    doc.rect(dataX, dashboardY, imgSize, imgSize);
+    doc.addImage(imgUri, dataX, dashboardY, imgSize, imgSize);
     doc.text(descList[0], dataX + imgSize + textMarginLeft, dashboardY + (imgSize / 3));
     doc.text(descList[1], dataX + imgSize + textMarginLeft, dashboardY + (imgSize / 3) + 6);
     doc.text(descList[2], dataX + imgSize + textMarginLeft, dashboardY + (imgSize / 3) + 12);

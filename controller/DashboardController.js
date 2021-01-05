@@ -8,8 +8,8 @@ exports.getAdminDashboardData = async (req, res) => {
         const studentCount = await UserRepository.getStudentsCount();
         const teacherCount = await UserRepository.getTeacherCount();
         const overdueBookCount = await BorrowBookRepository.getOverdueBooksCount();
-        const booksCurrentBorrowed = await BorrowBookRepository.getCurrentMonthBorrowedBookCount();
-        const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getCurrentMonthBorrowedBook();
+        const booksCurrentBorrowed = await BorrowBookRepository.getBorrowedBookCountByMonth();
+        const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getBorrowedBookByMonth();
         const totalBookBorrowedCount = booksCurrentBorrowed + booksHistoryCurrentBorrowed;
 
         res.json({ studentCount, teacherCount, overdueBookCount, booksCurrentBorrowed:totalBookBorrowedCount });
@@ -26,7 +26,7 @@ exports.getStudentDashboardData = async (req, res) => {
         const booksBorrowedHistoryCurrentMonthCount = await BorrowBookHistoryRepository.getCurrentMonthBorrowedBookByUserId(userId);
         const booksBorrowedCount = booksBorrowedCurrentMonthCount + booksBorrowedHistoryCurrentMonthCount;
         const overdueBookCount = await BorrowBookRepository.getOverdueBooksCountByUserId(userId);
-        const booksAddedCurrentMonth = await BookRepository.getBookCreatedCurrentMonthCount();
+        const booksAddedCurrentMonth = await BookRepository.getBookCreatedCountByMonth();
 
         res.json({ onLoanBookCount, booksBorrowedCount, overdueBookCount, booksAddedCurrentMonth });
     } catch (err) {
