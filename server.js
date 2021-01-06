@@ -5,6 +5,7 @@ var app = express();
 var port = 5000;
 const fs = require('fs');
 const cron = require('node-cron');
+const ImageDataURI = require('image-data-uri');
 
 app.use(bodyParser.json());
 app.use(cors({
@@ -106,6 +107,22 @@ app.post('/file', upload.single('file'), function (req, res, next) {
 app.post('/file-ebook', ebookUpload.single('file'), function (req, res, next) {
     const filepath = req.file.path;
     res.send(filepath);
+});
+
+app.post('/file-barcode', function (req, res) {
+//   console.log(req.body.img);
+  imgData = req.body.img;
+  id = req.body.id;
+  let filePath = './uploads/barcode/'+id+'.png';
+  let returnPath = 'uploads/barcode/'+id+'.png';
+  ImageDataURI.outputFile(imgData, filePath)
+    .then((res) =>
+        console.log("barcode saved to "+res)
+    )
+    .catch(e=>{
+      console.log(e);
+    });
+    res.send(returnPath);
 });
 
 
