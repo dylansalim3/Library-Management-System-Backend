@@ -43,7 +43,7 @@ module.exports = db.sequelize.define(
       type: Sequelize.STRING,
     },
     summary: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
     },
     status: {
       type: Sequelize.STRING,
