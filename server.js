@@ -78,6 +78,7 @@ const Dashboard = require('./routes/Dashboard');
 const BookRequests = require('./routes/BookRequests');
 const Author = require('./routes/Author');
 const BookCategory = require('./routes/BookCategory');
+const Setting = require('./routes/Setting')
 
 app.use('/uploads', express.static('uploads'));
 app.use('/migrations',express.static('migrations'));
@@ -97,6 +98,7 @@ app.use('/dashboard', Dashboard);
 app.use('/book-request', BookRequests);
 app.use('/author', Author);
 app.use('/bookCategory', BookCategory);
+app.use('/setting', Setting);
 
 
 app.post('/file', upload.single('file'), function (req, res, next) {
@@ -139,6 +141,7 @@ const userRole = require('./models/UserRole');
 const category = require('./models/Category');
 const notification = require('./models/Notification');
 const bookRequest = require('./models/BookRequest');
+const setting = require('./models/Setting');
 const db = require('./database/db');
 
 book.belongsTo(bookDetail, {foriegnKey: 'book_detail_id', constraint: true, OnDelete: 'CASCADE'});
