@@ -164,6 +164,7 @@ exports.rejectExtendBookRequest = (req, res) => {
 
 exports.createReserveBookRequest = async (req, res) => {
     let { userId, bookId, reason } = req.body;
+    console.log(userId,bookId, reason);
     const selectedBook = await BookRepository.findBookById(bookId);
     if (selectedBook === null) {
         res.status(404).json({ err: "Book does not exists" });
@@ -182,7 +183,7 @@ exports.createReserveBookRequest = async (req, res) => {
                 book_id: bookId,
                 type,
                 status,
-                reason,
+                reason: reason,
             }
             BookRequestRepository.createBookRequest(newBookRequest).then(result => {
                 // make book unavailable 
@@ -193,6 +194,29 @@ exports.createReserveBookRequest = async (req, res) => {
                 res.status(500).json({ err: err.toString() });
             });
         }
+    }else{
+        const type = RESERVE;
+        const status = PROCESSING;
+        const newBookRequest = {
+            user_id: userId,
+            book_id: bookId,
+            type,
+            status,
+            reason: reason,
+        };
+        BookRequestRepository.createBookRequest(newBookRequest)
+            .then((result) => {
+            // make book unavailable
+            return BookRepository.updateBookStatus(
+                bookId,
+                UNAVAILABLE
+            ).then((book) => {
+                res.json(result);
+            });
+            })
+            .catch((err) => {
+            res.status(500).json({ err: err.toString() });
+            });
     }
 
 }
