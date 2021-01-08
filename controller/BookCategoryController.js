@@ -16,3 +16,15 @@ exports.addCategory = (req, res) => {
       res.status(400).json({ message: 'Failed to create new category' });
     });
 };
+
+
+exports.deleteCategory = (req, res) => {
+  const categoryName = req.body.deleteFieldName;
+  BookCategoryRepository.deleteCategory(categoryName)
+    .then((res) => {
+      return res.json('Category deleted successfully.');
+    })
+    .catch((err) => {
+      res.status(400).json({ message: 'Failed to delete category' });
+    });
+};

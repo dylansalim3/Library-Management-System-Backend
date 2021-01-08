@@ -16,3 +16,14 @@ exports.addGenre = (req, res) => {
       res.status(400).json({ message: 'Failed to create new genre' });
     });
 };
+
+exports.deleteGenre = (req, res) => {
+  const genreName = req.body.deleteFieldName;
+  GenreRepository.deleteGenre(genreName)
+    .then((res) => {
+      return res.json('Genre deleted successfully.');
+    })
+    .catch((err) => {
+      res.status(400).json({ message: 'Failed to delete genre' });
+    });
+};
