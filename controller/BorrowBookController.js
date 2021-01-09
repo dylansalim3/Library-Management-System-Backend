@@ -6,8 +6,9 @@ exports.addBorrowBook = async (req, res) => {
     const startDate = req.body.startDate;
     const dueDate = req.body.endDate;
     const bookId = req.body.bookId;
-    const userId = req.body.userId;
-    const userExist = await UserRepository.checkUserExist(userId);
+    const email = req.body.email;
+    const userExist = await UserRepository.checkUserExistByEmail(email);
+    const user = await UserRepository.findUserByEmail(email);
     const isBookAvailable = await BookRepository.findBookById(bookId).then(book => {
         if (book) {
 
@@ -23,13 +24,13 @@ exports.addBorrowBook = async (req, res) => {
         res.status(400).json({message: "Book is not available"})
     } else {
 
-        BorrowBookRepository.findBorrowBookCountByUserId(userId).then(count => {
+        BorrowBookRepository.findBorrowBookCountByEmail(email).then(count => {
             if (count < 3) {
                 BorrowBookRepository.createBorrowBook({
                     start_date: startDate,
                     due_date: dueDate,
                     book_id: bookId,
-                    user_id: userId
+                    user_id: user.id
                 })
                     .then(borrowBook => {
                         return BookRepository.findBookById(bookId).then(book => {

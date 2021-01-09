@@ -8,7 +8,7 @@ bookRequests.post('/add-extend-book-request', BookRequestController.createExtend
 
 bookRequests.post('/find-all-extend-book-requests', BookRequestController.findAllExtendBookRequest);
 
-bookRequests.post('/find-all-borrowed-books-by-userid-bookid',BookRequestController.findBorrowBooksByUserIdAndBookId);
+bookRequests.post('/find-all-borrowed-books-by-email-bookid',BookRequestController.findBorrowBooksByEmailAndBookId);
 
 bookRequests.post('/accept-extend-book-request', BookRequestController.acceptExtendBookRequest);
 
