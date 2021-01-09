@@ -111,6 +111,8 @@ exports.findAllExtendBookRequest = (req, res) => {
                 status: bookRequest.status,
                 startDate: isBorrowBookExist ? borrowBooks[0].start_date : null,
                 dueDate: isBorrowBookExist ? borrowBooks[0].due_date : null,
+                reason:bookRequest.reason,
+                rejectReason:bookRequest.reject_reason,
             };
             if (item.status === PROCESSING) {
                 pendingBookRequests.push(item);
@@ -228,6 +230,8 @@ exports.findPendingBookReservationByUserId = (req, res) => {
     const { userId } = req.body;
     BookRequestRepository.findAllPendingBookReservationRequestByUserId(userId).then(bookRequests => {
         const mappedResults = bookRequests.map(bookRequest => {
+            console.log("REASON");
+            console.log(bookRequest.reason);
             return {
                 id: bookRequest.id,
                 bookId: bookRequest.book_id,
@@ -237,6 +241,7 @@ exports.findPendingBookReservationByUserId = (req, res) => {
                 userId: bookRequest.user.id,
                 username: bookRequest.user.first_name + bookRequest.user.last_name,
                 status: bookRequest.status,
+                reason:bookRequest.reason,
             };
         })
         res.json(mappedResults);
@@ -259,6 +264,8 @@ exports.findCompletedBookReservationByUserId = (req, res) => {
                 userId: bookRequest.user.id,
                 username: bookRequest.user.first_name + bookRequest.user.last_name,
                 status: bookRequest.status,
+                reason:bookRequest.reason,
+                rejectReason:bookRequest.reject_reason,
             };
         })
         res.json(mappedResults);
