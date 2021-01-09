@@ -3,8 +3,8 @@ const Book = require('../models/Book');
 const BookDetail = require('../models/BookDetail');
 const {Op, Sequelize} = require("sequelize");
 
-exports.findBorrowBookCountByUserId = (userId) => {
-    return BorrowBook.count({user_id: userId});
+exports.findBorrowBookCountByEmail = (email) => {
+    return BorrowBook.count({email});
 }
 
 exports.createBorrowBook = ({start_date: startDate, due_date: dueDate, book_id: bookId, user_id: userId}) => {
@@ -42,7 +42,17 @@ exports.getBorrowBookCount = (userId) => {
 }
 
 exports.getCurrentMonthBorrowedBookByUserId = (userId) => {
-    return BorrowBook.count({where: {[Op.and]: [{user_id: userId}, Sequelize.fn('month', Sequelize.col('start_date')), new Date().getMonth()]}});
+    const month = new Date().getMonth();
+    const year = new Date().getFullYear();
+    return BorrowBook.count({
+        where: {
+            user_id: userId,
+            start_date: {
+                [Op.gte]: new Date(year, month, 1, 0, 0, 0, 0),
+                [Op.lt]: new Date(month === 12 ? year + 1 : year, month === 12 ? 1 : month + 1, 1, 0, 0, 0, 0)
+            }
+        }
+    });
 }
 
 exports.getOverdueBooksCount = () => {
@@ -54,17 +64,6 @@ exports.getOverdueBooksCountByUserId = (userId) => {
 }
 
 exports.getBorrowedBookCountByMonth = (month, year) => {
-    return BorrowBook.count({
-        where: {
-            start_date: {
-                [Op.gte]: new Date(year, month, 1, 0, 0, 0, 0),
-                [Op.lt]: new Date(month === 12 ? year + 1 : year, month === 12 ? 1 : month + 1, 1, 0, 0, 0, 0)
-            }
-        }
-    });
-}
-
-exports.getBorrowBookCountByMonth = (month, year) => {
     return BorrowBook.count({
         where: {
             start_date: {

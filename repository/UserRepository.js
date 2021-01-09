@@ -85,9 +85,9 @@ exports.findUserByEmailAndRole = (email, role) => {
         );
 }
 
-exports.checkUserExist = async (userId) => {
-    const userExist = await User.count({where: {id: userId}});
-    return userExist;
+exports.checkUserExistByUserId = async (user_id) => {
+    const userExist = await User.count({where: {id: user_id}});
+    return userExist > 0;
 }
 
 exports.checkUserExistByEmail = async (email) => {

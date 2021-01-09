@@ -12,25 +12,27 @@ exports.getAdminDashboardData = async (req, res) => {
         const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getBorrowedBookByMonth();
         const totalBookBorrowedCount = booksCurrentBorrowed + booksHistoryCurrentBorrowed;
 
-        res.json({ studentCount, teacherCount, overdueBookCount, booksCurrentBorrowed:totalBookBorrowedCount });
+        res.json({studentCount, teacherCount, overdueBookCount, booksCurrentBorrowed: totalBookBorrowedCount});
     } catch (err) {
-        res.status(500).json({ err: err.toString() });
+        res.status(500).json({err: err.toString()});
     }
 }
 
 exports.getStudentDashboardData = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const {userId} = req.body;
+        const curMonth = new Date().getMonth();
+        const curYear = new Date().getFullYear();
         const onLoanBookCount = await BorrowBookRepository.getBorrowBookCount(userId);
         const booksBorrowedCurrentMonthCount = await BorrowBookRepository.getCurrentMonthBorrowedBookByUserId(userId);
         const booksBorrowedHistoryCurrentMonthCount = await BorrowBookHistoryRepository.getCurrentMonthBorrowedBookByUserId(userId);
         const booksBorrowedCount = booksBorrowedCurrentMonthCount + booksBorrowedHistoryCurrentMonthCount;
         const overdueBookCount = await BorrowBookRepository.getOverdueBooksCountByUserId(userId);
-        const booksAddedCurrentMonth = await BookRepository.getBookCreatedCountByMonth();
+        const booksAddedCurrentMonth = await BookRepository.getBookCreatedCountByMonth(curMonth, curYear);
 
-        res.json({ onLoanBookCount, booksBorrowedCount, overdueBookCount, booksAddedCurrentMonth });
+        res.json({onLoanBookCount, booksBorrowedCount, overdueBookCount, booksAddedCurrentMonth});
     } catch (err) {
         console.log(err);
-        res.status(500).json({ err: err.toString() });
+        res.status(500).json({err: err.toString()});
     }
 }

@@ -371,7 +371,7 @@ const createBooksBorrowedBarChart = async () => {
 
         monthStringArr.unshift(monthsInString[monthToGenerate]);
 
-        countArr.unshift(await BorrowBookRepository.getBorrowBookCountByMonth(monthToGenerate, yearToGenerate));
+        countArr.unshift(await BorrowBookRepository.getBorrowedBookCountByMonth(monthToGenerate, yearToGenerate));
     }
 
     const configuration = {

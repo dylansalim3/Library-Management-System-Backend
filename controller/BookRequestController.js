@@ -29,9 +29,10 @@ exports.findAllAvailableBorrowedBooksByUserId = async (req, res) => {
     res.json(mappedBorrowBookResults);
 }
 
-exports.findBorrowBooksByUserIdAndBookId = (req, res) => {
-    const { userId, bookId } = req.body;
-    BorrowBookRepository.findAllBorrowBookByUserIdAndBookId(userId, bookId).then(borrowBooks => {
+exports.findBorrowBooksByEmailAndBookId = async (req, res) => {
+    const { email, bookId } = req.body;
+    const user = await UserRepository.findUserByEmail(email)
+    BorrowBookRepository.findAllBorrowBookByUserIdAndBookId(user.id, bookId).then(borrowBooks => {
         const mappedBorrowBookResults = borrowBooks.map(result => {
             return {
                 id: result.id,
@@ -148,14 +149,16 @@ exports.acceptExtendBookRequest = async (req, res) => {
 exports.rejectExtendBookRequest = (req, res) => {
     const { bookRequestId, rejectReason, url } = req.body;
     const status = REJECTED;
-    BookRequestRepository.updateBookRequestStatus(bookRequestId, status, rejectReason).then(bookReqResult => {
-        const userId = bookReqResult.user_id;
-        const title = "Book Request have been rejected";
-        const desc = rejectReason;
-        const thumbnailUrl = "https://www.pinclipart.com/picdir/middle/249-2495553_icon-failure-clipart.png";
-        NotificationRepository.createNotification({ userId, title, desc, url, enablePush: true, priority: 'HIGH', thumbnailUrl });
+    BookRequestRepository.updateBookRequestStatus(bookRequestId, status, rejectReason).then(bookRequest => {
+        return BookRepository.updateBookStatus(bookRequest.book_id, AVAILABLE).then(book => {
+            const userId = bookReqResult.user_id;
+            const title = "Book Request have been rejected";
+            const desc = rejectReason;
+            const thumbnailUrl = "https://www.pinclipart.com/picdir/middle/249-2495553_icon-failure-clipart.png";
+            NotificationRepository.createNotification({ userId, title, desc, url, enablePush: true, priority: 'HIGH', thumbnailUrl });
 
-        res.json({ success: true });
+            res.json({ success: true });
+        });
     }).catch(err => {
         console.log(err.toString());
         res.status(500).json({ err: err.toString() });
