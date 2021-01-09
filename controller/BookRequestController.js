@@ -276,6 +276,7 @@ exports.findAllPendingReserveBookRequest = (req, res) => {
                 userId: bookRequest.user.id,
                 username: bookRequest.user.first_name + bookRequest.user.last_name,
                 status: bookRequest.status,
+                requestReason:bookRequest.reason
             };
         })
         res.json(mappedResults);
@@ -296,6 +297,7 @@ exports.findAllCompletedReserveBookRequest = (req, res) => {
                 userId: bookRequest.user.id,
                 username: bookRequest.user.first_name + bookRequest.user.last_name,
                 status: bookRequest.status,
+                rejectReason: bookRequest.reject_reason
             };
         })
         res.json(mappedResults);
