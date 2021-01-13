@@ -168,9 +168,9 @@ exports.getRegistrationCsv = (req, res) => {
     var csvLink = req.protocol + '://' + req.get('host');
 
     if (req.query.role === 'teacher') {
-        csvLink += '/uploads/registration/teacher/' + 'Format.csv';
+        csvLink += '/registration_form/' + 'Teacher-Format.csv';
     } else {
-        csvLink += '/uploads/registration/admin/' + 'Format.csv';
+        csvLink += '/registration_form/' + 'Admin-Format.csv';
     }
 
     res.send(csvLink);
@@ -254,7 +254,7 @@ exports.sendForgetPasswordEmail = (req, res) => {
 
     console.log('received email address : ' + email);
     UserRepository.updateUserVerificationHashByEmail(email, hashEmail).then(async result => {
-        const resetPasswordLink = resetPasswordLinkPrefix + '/' + hashEmail;
+        const resetPasswordLink = resetPasswordLinkPrefix + '?hash=' + hashEmail;
         const {subject, text} = buildResetPasswordEmail(resetPasswordLink);
         await sendEmail(email, subject, text, res);
         res.json({message: "Email sent"});
@@ -364,7 +364,7 @@ const createUserByCsv = async (req, res) => {
                             users.forEach(user => {
                                 const email = user.email;
                                 const verification_hash = user.verification_hash;
-                                const registrationLink = registrationLinkPrefix + '/' + verification_hash;
+                                const registrationLink = registrationLinkPrefix + '?hash=' + verification_hash;
                                 const {subject, text} = buildVerificationEmail(email, registrationLink);
                                 emailPromises.push(sendEmail(email, subject, text, res));
                             });
@@ -412,7 +412,7 @@ const createUser = async (req, res) => {
                             return user;
                         }).then(async (userResult) => {
                         const verification_hash = userResult.verification_hash;
-                        const registrationLink = registrationLinkPrefix + verification_hash;
+                        const registrationLink = registrationLinkPrefix + '?hash=' + verification_hash;
                         const {subject, text} = buildVerificationEmail(email, registrationLink);
                         await sendEmail(email, subject, text, res);
 
