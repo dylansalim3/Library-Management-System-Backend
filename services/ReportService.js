@@ -6,6 +6,20 @@ applyPlugin(jsPDF);
 const headerColor = "#203864";
 const headerRibbonColor = "#8497B0";
 const subheaderColor = "#dae3f3";
+const monthsInString = {
+    0: 'Jan',
+    1: 'Feb',
+    2: 'Mar',
+    3: 'Apr',
+    4: 'May',
+    5: 'Jun',
+    6: 'Jul',
+    7: 'Aug',
+    8: 'Sep',
+    9: 'Oct',
+    10: 'Nov',
+    11: 'Dec'
+};
 
 exports.createMonthlyReport = ({
                                    allUsersBase64,
@@ -36,7 +50,7 @@ exports.createMonthlyReport = ({
     doc.setFontSize(20);
     doc.setFont("Helvetica", "bold");
     doc.setTextColor("#FFFFFF")
-    doc.text("LIBRARY MONTHLY REPORT", width / 2 - 50, 18);
+    doc.text(`LIBRARY MONTHLY REPORT (${monthsInString[month]}-${year})`, width / 2 - 50, 18);
 
 
     //User Distribution Header
@@ -47,10 +61,10 @@ exports.createMonthlyReport = ({
 
     //User Distribution Data
     doc.text("New User", width / 6, 63);
-    doc.addImage(allUsersBase64, dataX + 15, 66, 60, 60);
+    doc.addImage(newUsersBase64, dataX + 15, 66, 60, 60);
 
     doc.text("Users", 4 * (width / 6) + 7, 63);
-    doc.addImage(newUsersBase64, (width / 2) + 7 + 15, 66, 60, 60);
+    doc.addImage(allUsersBase64, (width / 2) + 7 + 15, 66, 60, 60);
 
 
     //Dashboard Header
@@ -81,7 +95,7 @@ exports.createMonthlyReport = ({
     constructSubHeader(doc, booksBorrowedDistributionY, booksBorrowedIconUri, booksBorrowedDistributionHeaderText);
 
     // Top 5 borrowed books table
-    const bodyData = topFiveBorrowedBooks.map((element, index) => [index, element.title, element.author, element.count]);
+    const bodyData = topFiveBorrowedBooks.map((element, index) => [index+1, element.title, element.author, element.count]);
     doc.autoTable({
         head: [['No.', 'Title', 'Author', 'Count']],
         body:

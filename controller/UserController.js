@@ -249,6 +249,8 @@ exports.sendForgetPasswordEmail = (req, res) => {
     }
 
     const hashEmail = bcrypt.hashSync(email, 10).replace('/', '.');
+    console.log(resetPasswordLinkPrefix);
+    console.log(hashEmail);
 
     console.log('received email address : ' + email);
     UserRepository.updateUserVerificationHashByEmail(email, hashEmail).then(async result => {
@@ -409,9 +411,8 @@ const createUser = async (req, res) => {
                             user.addRole(role);
                             return user;
                         }).then(async (userResult) => {
-                        console.log(userResult);
                         const verification_hash = userResult.verification_hash;
-                        const registrationLink = "localhost:3000" + '/' + verification_hash;
+                        const registrationLink = registrationLinkPrefix + verification_hash;
                         const {subject, text} = buildVerificationEmail(email, registrationLink);
                         await sendEmail(email, subject, text, res);
 
