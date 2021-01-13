@@ -5,11 +5,13 @@ const BookRepository = require('./../repository/BookRepository');
 
 exports.getAdminDashboardData = async (req, res) => {
     try {
+        const curMonth = new Date().getMonth();
+        const year = new Date().getFullYear();
         const studentCount = await UserRepository.getStudentsCount();
         const teacherCount = await UserRepository.getTeacherCount();
         const overdueBookCount = await BorrowBookRepository.getOverdueBooksCount();
-        const booksCurrentBorrowed = await BorrowBookRepository.getBorrowedBookCountByMonth();
-        const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getBorrowedBookByMonth();
+        const booksCurrentBorrowed = await BorrowBookRepository.getBorrowedBookCountByMonth(curMonth, year);
+        const booksHistoryCurrentBorrowed = await BorrowBookHistoryRepository.getBorrowedBookByMonth(curMonth, year);
         const totalBookBorrowedCount = booksCurrentBorrowed + booksHistoryCurrentBorrowed;
 
         res.json({studentCount, teacherCount, overdueBookCount, booksCurrentBorrowed: totalBookBorrowedCount});

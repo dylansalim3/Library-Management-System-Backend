@@ -168,9 +168,9 @@ exports.getRegistrationCsv = (req, res) => {
     var csvLink = req.protocol + '://' + req.get('host');
 
     if (req.query.role === 'teacher') {
-        csvLink += '/uploads/registration/teacher/' + 'Format.csv';
+        csvLink += '/registration_form/' + 'Teacher-Format.csv';
     } else {
-        csvLink += '/uploads/registration/admin/' + 'Format.csv';
+        csvLink += '/registration_form/' + 'Admin-Format.csv';
     }
 
     res.send(csvLink);
