@@ -145,7 +145,7 @@ const doughnutChartCallback = (ChartJS) => {
 exports.generateCharts = async (curMonth, year) => {
 
     const allUsersBase64 = await createAllUserChart();
-    writeBase64ImageToFile(allUsersBase64, "allUsers");
+    // writeBase64ImageToFile(allUsersBase64, "allUsers");
 
     if (curMonth === undefined || year === undefined) {
         curMonth = new Date().getMonth();
@@ -158,7 +158,6 @@ exports.generateCharts = async (curMonth, year) => {
         year -= 1;
     }
 
-    console.log(month, year);
 
     const newUsersBase64 = await createNewUserChart(month, year);
     // writeBase64ImageToFile(newUsersBase64, "newUsers");
@@ -222,7 +221,7 @@ const createAllUserChart = async () => {
         options: {
             plugins: {
                 datalabels: {
-                    color:"white"
+                    color: "white"
                 }
             }
         }

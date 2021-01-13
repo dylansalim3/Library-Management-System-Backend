@@ -203,7 +203,7 @@ const ReportChartService = require('./services/ReportChartService');
 // ReportChartService.generateCharts();
 
 //cron job executed weekly saturday at 8.05am, backup database
-cron.schedule('5 8 * * 6', () => {
+cron.schedule('0 0/1 0/1 ? * * *', () => {
     const currentDate = new Date();
     const currentDay = currentDate.getDay();
     const currentMonth = currentDate.getMonth();
