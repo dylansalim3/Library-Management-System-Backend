@@ -4,6 +4,7 @@ const Genre = require('../models/Genre');
 const Book = require('../models/Book');
 const Author = require('./../models/Author');
 const Category = require('./../models/Category');
+const db = require('../database/db.js');
 
 exports.getBookDetails = async (searchCriteria, searchCriteriaType, genreId) => {
     const a = {};
@@ -45,5 +46,13 @@ exports.deleteBookDetailById = (bookDetailId, arguments) => {
 
 exports.findOrCreateBookDetail = (bookDetailEntry, arguments) => {
     return BookDetail.findOrCreate({where: bookDetailEntry, ...arguments});
+}
+
+exports.updateBarcodePath = (id,path)=>{
+        return db.sequelize.query(
+          `UPDATE book_detail SET barcode_path = ${JSON.stringify(path)}
+          WHERE book_detail.id =${JSON.stringify(id)}
+          `
+        );
 }
 

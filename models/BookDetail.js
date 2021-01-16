@@ -30,6 +30,9 @@ module.exports = db.sequelize.define(
     e_book: {
       type: Sequelize.STRING,
     },
+    barcode_path: {
+      type: Sequelize.STRING,
+    },
     category_id: {
       type: Sequelize.INTEGER,
     },
