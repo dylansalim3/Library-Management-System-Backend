@@ -24,6 +24,6 @@ exports.deleteGenre = (req, res) => {
       return res.json('Genre deleted successfully.');
     })
     .catch((err) => {
-      res.status(400).json({ message: 'Failed to delete genre' });
+      res.status(400).json({ message: err });
     });
 };

@@ -169,8 +169,10 @@ author.belongsToMany(bookDetail, {through: "book_author", foreign_key: 'author_i
 user.belongsToMany(role, {through: "user_role", foreignKey: 'user_id'});
 role.belongsToMany(user, {through: "user_role", foreignKey: 'role_id'});
 
-bookDetail.hasOne(category);
-category.belongsTo(bookDetail);
+bookDetail.belongsTo(category, { foreignKey: 'category_id' });
+category.hasOne(bookDetail, { foreignKey: 'category_id' });
+// bookDetail.hasOne(category);
+// category.belongsTo(bookDetail);
 
 notification.belongsTo(user, {foreignKey: 'user_id',});
 user.hasMany(notification, {foreignKey: 'user_id',});

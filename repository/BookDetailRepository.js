@@ -3,6 +3,7 @@ const BookDetail = require('../models/BookDetail');
 const Genre = require('../models/Genre');
 const Book = require('../models/Book');
 const Author = require('./../models/Author');
+const Category = require('./../models/Category');
 
 exports.getBookDetails = async (searchCriteria, searchCriteriaType, genreId) => {
     const a = {};
@@ -14,7 +15,7 @@ exports.getBookDetails = async (searchCriteria, searchCriteriaType, genreId) => 
     }
 
     return BookDetail.findAll({
-        include: [Genre, Book, {model: Author, as: 'authors', attributes: ['name']}],
+        include: [Genre, Book, Category,{model: Author, as: 'authors', attributes: ['name']}],
         where: (Sequelize.fn('lower', Sequelize.col(searchCriteriaType)), a)
     }).map(book => {
         return book;
