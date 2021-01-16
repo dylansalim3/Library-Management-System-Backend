@@ -114,6 +114,12 @@ exports.updateBookDetails = async (req, res) => {
 
 }
 
+exports.updateBarcodePath = (req,res) => {
+    const bookId = req.body.bookId;
+    const barcodePath = req.body.barcodePath;
+    BookDetailRepository.updateBarcodePath(bookId,barcodePath);
+}
+
 exports.deleteBook = async (req, res) => {
     const bookDetailId = req.body.id;
     const bookId = await BookRepository.findBookByBookDetailId(bookDetailId).then(book => {

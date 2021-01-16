@@ -33,7 +33,10 @@ exports.findAllExtendBookRequestByUserIdAndBookId = (userId, bookId) => {
 }
 
 exports.findAllExtendBookRequest = () => {
-    return BookRequest.findAll({ include: [{ model: Book, include: [BookDetail] }, User], where: { type: EXTEND } });
+    return BookRequest.findAll({
+      include: [{ model: Book, include: [BookDetail] }, User],
+      where: { type: EXTEND }
+    });
 }
 
 exports.findBookRequestByPk = (pk) => {

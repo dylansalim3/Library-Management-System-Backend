@@ -10,7 +10,9 @@ bookDetails.get('/get-latest-book', BookDetailController.getLatestBook);
 bookDetails.post('/update-book', BookDetailController.updateBookDetails);
 
 // haven tested
-bookDetails.post('/delete-book', BookDetailController.deleteBook)
+bookDetails.post('/delete-book', BookDetailController.deleteBook);
+
+bookDetails.post('/update-barcodepath', BookDetailController.updateBarcodePath);
 
 bookDetails.post('/get-book-recommendation', BookDetailController.getBookRecommendation);
 
