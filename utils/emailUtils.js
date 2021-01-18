@@ -1,6 +1,6 @@
 const nodemailer = require('nodemailer');
 const env = process.env;
-const {google} = require('googleapis');
+const { google } = require('googleapis');
 const FRONTEND_URL = env.FRONTEND_URL;
 
 const sendEmail = async (receiverEmail, emailSubject, html, res) => {
@@ -17,7 +17,7 @@ const sendEmail = async (receiverEmail, emailSubject, html, res) => {
         clientSecret
     );
 
-    myOAuth2Client.setCredentials({refresh_token: refreshToken});
+    myOAuth2Client.setCredentials({ refresh_token: refreshToken });
 
     const myAccessToken = myOAuth2Client.getAccessToken()
 
@@ -143,12 +143,12 @@ const buildVerificationEmail = (receiverFirstName, registrationLink) => {
 </html>
     
     `;
-    return {subject: subject, text: text};
+    return { subject: subject, text: text };
 }
 
 const buildResetPasswordEmail = (resetPasswordLink) => {
     var subject = "[E-Library] Password Recovery";
-    var text =  `    
+    var text = `    
 <!doctype html>
 <html lang="en-US">
 
@@ -235,15 +235,28 @@ const buildResetPasswordEmail = (resetPasswordLink) => {
 </html>
     
     `;
-    return {subject: subject, text: text};
+    return { subject: subject, text: text };
 }
 
-const buildBackupDatabaseEmail = (receiverFirstName, downloadLink) => {
-    const currentDate = new Date();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    const subject = `[E-Library] Database Backup for ${currentMonth} ${currentYear}`;
-    const text =`  
+const monthsInString = {
+    0: 'Jan',
+    1: 'Feb',
+    2: 'Mar',
+    3: 'Apr',
+    4: 'May',
+    5: 'Jun',
+    6: 'Jul',
+    7: 'Aug',
+    8: 'Sep',
+    9: 'Oct',
+    10: 'Nov',
+    11: 'Dec'
+};
+
+const buildBackupDatabaseEmail = (downloadLink, month, year) => {
+    console.log("month is "+month);
+    const subject = `[E-Library] Database Backup for ${monthsInString[month]} ${year}`;
+    const text = `  
 <!doctype html>
 <html lang="en-US">
 
@@ -319,7 +332,7 @@ const buildBackupDatabaseEmail = (receiverFirstName, downloadLink) => {
 </html>
     
     `;
-    return {subject: subject, text: text};
+    return { subject: subject, text: text };
 }
 
 function validateEmail(email) {
@@ -327,4 +340,4 @@ function validateEmail(email) {
     return re.test(email);
 }
 
-module.exports = {buildResetPasswordEmail, buildVerificationEmail, sendEmail, validateEmail, buildBackupDatabaseEmail};
+module.exports = { buildResetPasswordEmail, buildVerificationEmail, sendEmail, validateEmail, buildBackupDatabaseEmail };

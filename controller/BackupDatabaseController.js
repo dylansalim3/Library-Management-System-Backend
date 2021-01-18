@@ -14,15 +14,19 @@ const port = process.env.DB_PORT;
 
 const backupDatabaseService = require('../services/BackupDatabaseService');
 
-const importer = new Importer({host: host, port: port, user: userName, password: password, database: tableName});
+const importer = new Importer({ host: host, port: port, user: userName, password: password, database: tableName });
 
 exports.backupDatabase = (req, res) => {
     try {
-        backupDatabaseService.backupDatabase(res, () => {
-            console.log("Completed")
+        const currentDate = new Date();
+        const currentDay = currentDate.getDay();
+        let month = new Date().getMonth();
+        let year = new Date().getFullYear();
+        backupDatabaseService.backupDatabase(() => {
+            res.json({ msg: "success", download: req.protocol + '://' + req.get('host') + `/migrations/backup_archive/backup-${currentDay}${month}${year}.zip` });
         })
     } catch (err) {
-        res.status(500).json({error: `Error occurred while migrating ${err.toString()}`});
+        res.status(500).json({ error: `Error occurred while migrating ${err.toString()}` });
     }
 }
 
@@ -32,7 +36,7 @@ exports.sendBackupEmail = (req, res) => {
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
     backupDatabaseService.sendBackupDatabaseEmail(currentDay, currentMonth, currentYear).then(result => {
-        res.json({msg: "success"});
+        res.json({ msg: "success" });
     });
 }
 
@@ -52,7 +56,7 @@ exports.restoreDatabase = (req, res) => {
     try {
 
         zip.on('error', err => {
-            res.status(500).json({error: "Error in backing up database", message: err.toString()});
+            res.status(500).json({ error: "Error in backing up database", message: err.toString() });
         });
 
         zip.on('ready', () => {
@@ -63,20 +67,20 @@ exports.restoreDatabase = (req, res) => {
 
                 if (err) {
                     console.log("error in extracting" + err);
-                    res.status(500).json({error: "Error in backing up database", message: err.toString()});
+                    res.status(500).json({ error: "Error in backing up database", message: err.toString() });
                 } else {
                     fse.copySync(path.join(uploadedArchiveFolder, 'uploads'),
-                        uploadsDirectory, {overwrite: true},
+                        uploadsDirectory, { overwrite: true },
                         function (err) {
                             if (err) {
                                 //error
-                                res.status(500).json({error: "Error in backing up database", message: err.toString()});
+                                res.status(500).json({ error: "Error in backing up database", message: err.toString() });
                             }
                         });
-                    dumpSqlFile({dumpToFile: path.join('migrations', initialDumpSqlFileName).toString()})
+                    dumpSqlFile({ dumpToFile: path.join('migrations', initialDumpSqlFileName).toString() })
                         .then(async result => {
                             await db.sequelize.dropAllSchemas().catch(err => {
-                                res.status(500).json({error: "Error in dropping databases", message: err.toString()});
+                                res.status(500).json({ error: "Error in dropping databases", message: err.toString() });
                             });
                             console.log("dumped");
 
@@ -87,7 +91,7 @@ exports.restoreDatabase = (req, res) => {
                                 console.log(err.toString());
                                 await importer.import(path.join('migrations', initialDumpSqlFileName).toString()).then(result => {
                                     console.log("changes reverted");
-                                    res.status(500).json({error: "changes reverted"});
+                                    res.status(500).json({ error: "changes reverted" });
                                 }).catch(err => {
                                     console.log(err.toString());
                                     res.status(500).json({
@@ -104,13 +108,13 @@ exports.restoreDatabase = (req, res) => {
 
     } catch (err) {
         console.log(err);
-        res.status(500).json({error: "Error in backing up database", message: err.toString()});
+        res.status(500).json({ error: "Error in backing up database", message: err.toString() });
     }
 
 
 }
 
-const dumpSqlFile = ({dumpToFile}) => {
+const dumpSqlFile = ({ dumpToFile }) => {
     return mysqldump({
         connection: {
             host: host,
