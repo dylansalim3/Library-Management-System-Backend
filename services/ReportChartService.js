@@ -18,6 +18,7 @@ const chartCallback = (ChartJS, plugin) => {
     // Global config example: https://www.chartjs.org/docs/latest/configuration/
     ChartJS.defaults.global.elements.rectangle.borderWidth = 2;
     // Global plugin example: https://www.chartjs.org/docs/latest/developers/plugins.html
+    ChartJS.defaults.global.defaultFontFamily = '"OpenSans",sans-serif';
     ChartJS.plugins.register({
         ...plugin,
         // beforeDraw: function(chartInstance) {
@@ -37,7 +38,7 @@ const chartCallback = (ChartJS, plugin) => {
                 ctx.save();
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.font = "16px normal 'Helvetica Nueue'";
+                ctx.font = "16px normal 'Helvetica Neue'";
                 // chart.options.title.text <=== gets title from chart
                 // width / 2 <=== centers title on canvas
                 // 18 <=== aligns text 18 pixels from top, just like Chart.js

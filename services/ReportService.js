@@ -50,7 +50,7 @@ exports.createMonthlyReport = ({
     doc.setFontSize(20);
     doc.setFont("Helvetica", "bold");
     doc.setTextColor("#FFFFFF")
-    doc.text(`LIBRARY MONTHLY REPORT (${monthsInString[month]}-${year})`, width / 2 - 50, 18);
+    doc.text(`LIBRARY MONTHLY REPORT (${monthsInString[month]}-${year})`, width / 2 - 65, 18);
 
 
     //User Distribution Header
