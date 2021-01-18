@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 exports.getMonthlyReport = async (req, res) => {
-    let {month, year} = req.body;
+    let { month, year } = req.body;
 
 
     if (month === undefined || month < 1 || month > 12) {
@@ -43,18 +43,8 @@ exports.getMonthlyReport = async (req, res) => {
 
 
     if (hasError) {
-        res.status(500).json({msg: "failed"});
+        res.status(500).json({ msg: "failed" });
     } else {
-        fs.readFile(path.join(path.dirname(require.main.filename || process.main.filename), 'report', `report-${month + 1}${year}.pdf`),
-            function (error, data) {
-                if (error) {
-                    console.log(error)
-                    res.status(500).json({msg: "failed"});
-                } else {
-                    res.writeHead(200, {"Content-Type": "application/pdf"});
-                    res.write(data);
-                    res.end();
-                }
-            });
+        res.json({ msg: "success", download: req.protocol + '://' + req.get('host') + `/report/report-${month + 1}${year}.pdf` });
     }
 }

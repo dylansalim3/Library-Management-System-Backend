@@ -1,36 +1,37 @@
 const fs = require('fs');
 const path = require('path');
 
-exports.backupDatabase = (output, callback) => {
+exports.backupDatabase = (callback) => {
     const fileName = 'backup.sql';
+
+    let month = new Date().getMonth();
+    let year = new Date().getFullYear();
+
     const currentDate = new Date();
     const currentDay = currentDate.getDay();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    if (output === null) {
-        output = fs.createWriteStream(path.join(path.dirname(require.main.filename || process.main.filename), 'migrations', 'backup_archive', `backup-${currentDay}${currentMonth}${currentYear}.zip`));
-    }
+    const output = fs.createWriteStream(path.join(path.dirname(require.main.filename || process.main.filename), 'migrations', 'backup_archive', `backup-${currentDay}${month}${year}.zip`));
+    
 
-    dumpSqlFile({dumpToFile: path.join('migrations', fileName).toString()}).then(() => {
+    dumpSqlFile({ dumpToFile: path.join('migrations', fileName).toString() }).then(() => {
         const backupSqlPath = path.join(path.dirname(require.main.filename || process.main.filename), 'migrations', fileName);
-        zipBackupData({fileToArchive: backupSqlPath, archiveCallback: callback, output});
+        zipBackupData({ fileToArchive: backupSqlPath, archiveCallback: callback, output });
     });
 }
 
 const EmailUtil = require('./../utils/emailUtils');
 const UserRepository = require('./../repository/UserRepository');
 
-exports.sendBackupDatabaseEmail = async (day,month, year) => {
-    this.backupDatabase(null, (filePath) => {
-
+exports.sendBackupDatabaseEmail = async (day, month, year) => {
+    
+    this.backupDatabase((filePath) => {
         UserRepository.findAllUserByRole('admin').then(admins => {
-            // admins.forEach(admin => {
-            const {
-                subject,
-                text
-            } = EmailUtil.buildBackupDatabaseEmail("Dylan", `http://localhost:5000/migrations/backup_archive/backup-${day}${month}${year}.zip`);
-            EmailUtil.sendEmail("dylansalim3@gmail.com", subject, text, null, {});
-            // });
+            admins.forEach(admin => {
+                const {
+                    subject,
+                    text
+                } = EmailUtil.buildBackupDatabaseEmail(`${process.env.BACKEND_URL}migrations/backup_archive/backup-${day}${month}${year}.zip`,month, year);
+                EmailUtil.sendEmail(admin.email, subject, text, null, {});
+            });
             return true;
         })
     })
@@ -46,9 +47,9 @@ const password = process.env.DB_PASSWORD;
 const host = process.env.DB_HOST;
 const port = process.env.DB_PORT;
 
-const importer = new Importer({host: host, port: port, user: userName, password: password, database: tableName});
+const importer = new Importer({ host: host, port: port, user: userName, password: password, database: tableName });
 
-const dumpSqlFile = ({dumpToFile}) => {
+const dumpSqlFile = ({ dumpToFile }) => {
     return mysqldump({
         connection: {
             host: host,
@@ -63,9 +64,9 @@ const dumpSqlFile = ({dumpToFile}) => {
 
 const archiver = require('archiver');
 
-const zipBackupData = ({fileToArchive, archiveCallback, output}) => {
+const zipBackupData = ({ fileToArchive, archiveCallback, output }) => {
     const archive = archiver('zip', {
-        zlib: {level: 9} // Sets the compression level.
+        zlib: { level: 9 } // Sets the compression level.
     });
 
     // This event is fired when the data source is drained no matter what was the data source.
@@ -100,7 +101,7 @@ const zipBackupData = ({fileToArchive, archiveCallback, output}) => {
     //pipe archive data to file
     archive.pipe(output);
 
-    archive.append(fs.createReadStream(fileToArchive), {name: 'backup.sql'})
+    archive.append(fs.createReadStream(fileToArchive), { name: 'backup.sql' })
 
     //append files in the uploads directory and name it uploads in the archive
     archive.directory(path.join(path.dirname(require.main.filename || process.main.filename), 'uploads'), 'uploads', null);

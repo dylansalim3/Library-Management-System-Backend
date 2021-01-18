@@ -8,8 +8,6 @@ const BookRepository = require('./../repository/BookRepository');
 const {BORROWED_MAX, OVERDUE_MAX, ADDED_MAX, RENEWED_MAX} = require('./../constant/constant');
 const ChartDataLabels = require('chartjs-plugin-datalabels');
 
-// const stream = canvasRenderService.renderToStream(configuration);
-// const imageBuffer = await canvasRenderService.renderToBuffer(configuration);
 const headerColor = "#203864";
 const headerRibbonColor = "#8497B0";
 const subheaderColor = "#dae3f3";
@@ -20,6 +18,7 @@ const chartCallback = (ChartJS, plugin) => {
     // Global config example: https://www.chartjs.org/docs/latest/configuration/
     ChartJS.defaults.global.elements.rectangle.borderWidth = 2;
     // Global plugin example: https://www.chartjs.org/docs/latest/developers/plugins.html
+    ChartJS.defaults.global.defaultFontFamily = '"OpenSans",sans-serif';
     ChartJS.plugins.register({
         ...plugin,
         // beforeDraw: function(chartInstance) {
@@ -39,7 +38,7 @@ const chartCallback = (ChartJS, plugin) => {
                 ctx.save();
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.font = "16px normal 'Helvetica Nueue'";
+                ctx.font = "16px normal 'Helvetica Neue'";
                 // chart.options.title.text <=== gets title from chart
                 // width / 2 <=== centers title on canvas
                 // 18 <=== aligns text 18 pixels from top, just like Chart.js
@@ -145,7 +144,7 @@ const doughnutChartCallback = (ChartJS) => {
 exports.generateCharts = async (curMonth, year) => {
 
     const allUsersBase64 = await createAllUserChart();
-    // writeBase64ImageToFile(allUsersBase64, "allUsers");
+    writeBase64ImageToFile(allUsersBase64, "allUsers");
 
     if (curMonth === undefined || year === undefined) {
         curMonth = new Date().getMonth();
@@ -160,21 +159,21 @@ exports.generateCharts = async (curMonth, year) => {
 
 
     const newUsersBase64 = await createNewUserChart(month, year);
-    // writeBase64ImageToFile(newUsersBase64, "newUsers");
+    writeBase64ImageToFile(newUsersBase64, "newUsers");
 
     const numberOfBooksBorrowedDoughnutBase64 = await createNumberOfBooksBorrowedDoughnut(month, year);
-    // writeBase64ImageToFile(numberOfBooksBorrowedDoughnutBase64, "NoOfBooks");
+    writeBase64ImageToFile(numberOfBooksBorrowedDoughnutBase64, "NoOfBooks");
 
     const overdueBooksBase64 = await createNumberOfBooksOverdueDoughnut(month, year);
-    // writeBase64ImageToFile(overdueBooksBase64, "Overdue")
+    writeBase64ImageToFile(overdueBooksBase64, "Overdue")
 
     const addedBooksBase64 = await createNumberOfBooksAddedDoughnut(month, year);
-    // writeBase64ImageToFile(addedBooksBase64, "Added");
+    writeBase64ImageToFile(addedBooksBase64, "Added");
 
     // await BorrowBookRepository.getTopFiveBooksBorrowed();
 
     const barChartBase64 = await createBooksBorrowedBarChart();
-    // writeBase64ImageToFile(barChartBase64, "Bar_Chart");
+    writeBase64ImageToFile(barChartBase64, "Bar_Chart");
 
     // console.log(newUsersBase64)
 

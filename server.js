@@ -83,6 +83,7 @@ const Setting = require('./routes/Setting')
 app.use('/uploads', express.static('uploads'));
 app.use('/migrations', express.static('migrations'));
 app.use('/report', express.static('report'));
+app.use('/registration_form', express.static('registration_form'));
 app.use('/users', Users);
 app.use('/books', Books);
 app.use('/book-details', BookDetails);
@@ -198,18 +199,13 @@ startSocketServer(server);
 
 const backupDatabaseService = require('./services/BackupDatabaseService');
 
-const ReportService = require('./services/ReportService');
-const ReportChartService = require('./services/ReportChartService');
-
-// ReportService.createMonthlyReport();
-// ReportChartService.generateCharts();
-
-//cron job executed weekly saturday at 8.05am, backup database
-cron.schedule('0 0/1 0/1 ? * * *', () => {
+//cron job executed at 08:05am on day-of-month 15., backup database
+cron.schedule('5 8 15 * *', () => {
+    console.log("triggered");
     const currentDate = new Date();
     const currentDay = currentDate.getDay();
-    const currentMonth = currentDate.getMonth();
-    const currentYear = currentDate.getFullYear();
-    backupDatabaseService.sendBackupDatabaseEmail(currentDay, currentMonth, currentYear);
+    let month = new Date().getMonth();
+    let year = new Date().getFullYear();
+    backupDatabaseService.sendBackupDatabaseEmail(currentDay, month, year);
 });
 

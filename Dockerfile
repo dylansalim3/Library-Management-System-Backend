@@ -6,7 +6,8 @@ RUN apk add --no-cache \
     cairo-dev \
     jpeg-dev \
     pango-dev \
-    giflib-dev
+    giflib-dev \
+    ttf-opensans
 
 WORKDIR /backend
 COPY package.json /backend
