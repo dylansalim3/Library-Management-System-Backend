@@ -153,7 +153,7 @@ exports.rejectExtendBookRequest = async(req, res) => {
     const status = REJECTED;
     const mybookRequest = await BookRequestRepository.findBookRequestByPk(bookRequestId);
     BookRequestRepository.updateBookRequestStatus(bookRequestId, status, rejectReason).then(async bookRequest => {
-        return BookRepository.updateBookStatus(bookRequest.book_id, AVAILABLE).then(book => {
+        return BookRepository.updateBookStatus(bookRequest.book_id, UNAVAILABLE).then(book => {
             var userId = mybookRequest.user_id;
             const title = "Book Request have been rejected";
             const desc = rejectReason;
