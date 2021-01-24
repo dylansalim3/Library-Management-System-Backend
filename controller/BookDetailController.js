@@ -88,6 +88,7 @@ exports.updateBookDetails = async (req, res) => {
             bookDetail.datepublished = req.body.datepublished;
             bookDetail.publisher = req.body.publisher;
             bookDetail.location = req.body.location;
+            bookDetail.author = req.body.author;
             // bookDetail.addAuthor(author);
             bookDetail.save();
             return bookDetail;
