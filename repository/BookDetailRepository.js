@@ -25,7 +25,7 @@ exports.getBookDetails = async (searchCriteria, searchCriteriaType, genreId) => 
 
 exports.getThreeLatestBook = () => {
     return BookDetail.findAll({
-        include: [Genre, Book, Author],
+        include: [Genre,Category, Book, Author],
         limit: 3,
         order: [['created', 'DESC']]
     }).map(book => {
