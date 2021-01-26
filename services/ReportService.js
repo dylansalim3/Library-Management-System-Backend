@@ -106,7 +106,7 @@ exports.createMonthlyReport = ({
         startY: booksBorrowedDistributionY + 10 + marginWithPreviousElement + marginWithPreviousElement,
         tableWidth: 'wrap',
         showFoot: 'firstPage',
-        styles: {cellPadding: 2, fontSize: 12}
+        styles: {cellPadding: 2, fontSize: 6}
     });
 
     const topBookBorrowedIconUri = transformFileToBase64Uri('./assets/icons/bookmark.png', mime);
