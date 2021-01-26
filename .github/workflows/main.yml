@@ -36,4 +36,4 @@ jobs:
       run: cp -r * ~/dylan-fyp/web/ && rm -r *
       
     - name: Restart Docker
-      run: docker container restart fyp-backend
+      run: docker container restart fyp_backend
