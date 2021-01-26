@@ -63,6 +63,7 @@ exports.updateBookDetails = async (req, res) => {
         datepublished: req.body.datepublished,
         publisher: req.body.publisher,
         location: req.body.location,
+        ebook: req.body.ebook
     };
     // const author = await AuthorRepository.findAuthorByName(authorName).then(author => {
     //     if (author) {
@@ -89,6 +90,7 @@ exports.updateBookDetails = async (req, res) => {
             bookDetail.publisher = req.body.publisher;
             bookDetail.location = req.body.location;
             bookDetail.author = req.body.author;
+            bookDetail.e_book = req.body.ebook;
             // bookDetail.addAuthor(author);
             bookDetail.save();
             return bookDetail;
