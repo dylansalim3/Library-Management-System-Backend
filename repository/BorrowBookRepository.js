@@ -1,28 +1,31 @@
 const BorrowBook = require("../models/BorrowBook");
 const Book = require('../models/Book');
 const BookDetail = require('../models/BookDetail');
-const { Op, Sequelize } = require("sequelize");
+const {Op, Sequelize} = require("sequelize");
+const UserRepository = require("../repository/UserRepository");
 
-exports.findBorrowBookCountByEmail = (email) => {
-    return BorrowBook.count({ where: { email } });
+exports.findBorrowBookCountByEmail = async (email) => {
+    const user = await UserRepository.findUserByEmail(email)
+
+    return BorrowBook.count({where: {user_id: user.id}});
 }
 
-exports.createBorrowBook = ({ start_date: startDate, due_date: dueDate, book_id: bookId, user_id: userId }) => {
-    return BorrowBook.create({ start_date: startDate, due_date: dueDate, book_id: bookId, user_id: userId });
+exports.createBorrowBook = ({start_date: startDate, due_date: dueDate, book_id: bookId, user_id: userId}) => {
+    return BorrowBook.create({start_date: startDate, due_date: dueDate, book_id: bookId, user_id: userId});
 }
 
 exports.findBorrowBookByBookId = (bookId) => {
-    return BorrowBook.findOne({ book_id: bookId });
+    return BorrowBook.findOne({book_id: bookId});
 }
 
 exports.findBorrowBookByPk = (pk, options) => {
-    return BorrowBook.findOne({ where: { id: pk }, options });
+    return BorrowBook.findOne({where: {id: pk}, options});
 }
 
 exports.findAllBorrowBook = (userId) => {
     return BorrowBook.findAll({
-        include: [{ model: Book, require: true, include: [BookDetail] }],
-        where: { user_id: userId }
+        include: [{model: Book, require: true, include: [BookDetail]}],
+        where: {user_id: userId}
     });
 }
 
@@ -34,11 +37,11 @@ exports.findAllBorrowBookByUserIdAndBookId = (userId, bookId) => {
     if (bookId) {
         queryCriteria['book_id'] = bookId;
     }
-    return BorrowBook.findAll({ include: [{ model: Book, require: true, include: [BookDetail] }], where: queryCriteria });
+    return BorrowBook.findAll({include: [{model: Book, require: true, include: [BookDetail]}], where: queryCriteria});
 }
 
 exports.getBorrowBookCount = (userId) => {
-    return BorrowBook.count({ where: { user_id: userId } });
+    return BorrowBook.count({where: {user_id: userId}});
 }
 
 exports.getCurrentMonthBorrowedBookByUserId = (userId) => {
@@ -56,11 +59,11 @@ exports.getCurrentMonthBorrowedBookByUserId = (userId) => {
 }
 
 exports.getOverdueBooksCount = () => {
-    return BorrowBook.count({ where: { due_date: { $lt: new Date() } } });
+    return BorrowBook.count({where: {due_date: {$lt: new Date()}}});
 }
 
 exports.getOverdueBooksCountByUserId = (userId) => {
-    return BorrowBook.count({ where: { user_id: userId, due_date: { $lt: new Date() } } });
+    return BorrowBook.count({where: {user_id: userId, due_date: {$lt: new Date()}}});
 }
 
 exports.getBorrowedBookCountByMonth = (month, year) => {
@@ -86,7 +89,7 @@ exports.getTotalOverdueBooksCountByMonth = (month, year) => {
 }
 
 exports.extendDueDate = (bookId, userId, newDueDate) => {
-    return BorrowBook.findOne({ where: { book_id: bookId, user_id: userId } }).then(borrowBook => {
+    return BorrowBook.findOne({where: {book_id: bookId, user_id: userId}}).then(borrowBook => {
         if (!borrowBook) {
             throw Error("Borrow Book entry not found");
         }
@@ -97,7 +100,7 @@ exports.extendDueDate = (bookId, userId, newDueDate) => {
 }
 
 exports.extendDueDateByBorrowBookId = (borrowBookId, newDueDate) => {
-    return BorrowBook.findOne({ where: { id: borrowBookId } }).then(borrowBook => {
+    return BorrowBook.findOne({where: {id: borrowBookId}}).then(borrowBook => {
         borrowBook.due_date = newDueDate;
         borrowBook.save();
         return borrowBook;
@@ -106,7 +109,7 @@ exports.extendDueDateByBorrowBookId = (borrowBookId, newDueDate) => {
 
 exports.getTopFiveBooksBorrowed = () => {
     return BorrowBook.findAll({
-        include: [{ model: Book, require: true, include: [BookDetail] }],
+        include: [{model: Book, require: true, include: [BookDetail]}],
         attributes: ['book_id', [Sequelize.fn('count', Sequelize.col('book_id')), 'book_count']],
         group: ['book_id'],
         order: [[Sequelize.col('book_count'), 'DESC']],
