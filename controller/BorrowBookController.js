@@ -23,7 +23,6 @@ exports.addBorrowBook = async (req, res) => {
     } else if (!isBookAvailable) {
         res.status(400).json({message: "Book is not available"})
     } else {
-
         BorrowBookRepository.findBorrowBookCountByEmail(email).then(count => {
             if (count < 3) {
                 BorrowBookRepository.createBorrowBook({
