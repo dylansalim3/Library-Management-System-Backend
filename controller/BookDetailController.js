@@ -28,17 +28,17 @@ exports.getBookRecommendation = (req, res) => {
     const {userId} = req.body;
     try {
         BorrowBookHistoryRepository.findAllBorrowBookHistoryByUserId(userId).then(borrowBookHistories => {
-            if(borrowBookHistories===undefined){
-                res.status(404).json({message:"No matching history available"})
-            }else{
+            if (borrowBookHistories === undefined) {
+                res.status(404).json({message: "No matching history available"})
+            } else {
                 const genreIdList = borrowBookHistories.map(borrowBookHistory => borrowBookHistory.book.book_detail.genre_id);
 
                 Promise.all(genreIdList.map(async genreId => {
                     return await BookDetailRepository.getBookDetails(null, null, genreIdList);
                 }))
                     .then(bookDetails => {
-                    res.json(bookDetails.flat());
-                });
+                        res.json(bookDetails.flat());
+                    });
 
             }
 
@@ -63,7 +63,6 @@ exports.updateBookDetails = async (req, res) => {
         datepublished: req.body.datepublished,
         publisher: req.body.publisher,
         location: req.body.location,
-        ebook: req.body.ebook
     };
     // const author = await AuthorRepository.findAuthorByName(authorName).then(author => {
     //     if (author) {
@@ -81,18 +80,22 @@ exports.updateBookDetails = async (req, res) => {
     // if (author) {
     db.sequelize.transaction(t => {
         return BookDetailRepository.findBookDetailById(bookDetailId, {transaction: t}).then(bookDetail => {
-            bookDetail.title = req.body.title;
-            bookDetail.isbn = req.body.isbn;
-            bookDetail.genre_id = req.body.genreId;
-            bookDetail.bookimg = req.body.bookimg;
-            bookDetail.summary = req.body.summary;
-            bookDetail.datepublished = req.body.datepublished;
-            bookDetail.publisher = req.body.publisher;
-            bookDetail.location = req.body.location;
-            bookDetail.author = req.body.author;
-            bookDetail.e_book = req.body.ebook;
-            // bookDetail.addAuthor(author);
-            bookDetail.save();
+            if (bookDetail !== undefined) {
+                bookDetail.title = req.body.title;
+                bookDetail.isbn = req.body.isbn;
+                bookDetail.genre_id = req.body.genreId;
+                bookDetail.bookimg = req.body.bookimg;
+                bookDetail.summary = req.body.summary;
+                bookDetail.datepublished = req.body.datepublished;
+                bookDetail.publisher = req.body.publisher;
+                bookDetail.location = req.body.location;
+                bookDetail.author = req.body.author;
+                if(req.body.ebook){
+                    bookDetail.e_book = req.body.ebook;
+                }
+                // bookDetail.addAuthor(author);
+                bookDetail.save();
+            }
             return bookDetail;
             // return BookAuthor.findOne({where: {book_detail_id: bookDetailId}, transaction: t}).then(bookAuthor => {
             //     console.log(bookAuthor.author_id, authorId);
@@ -117,10 +120,10 @@ exports.updateBookDetails = async (req, res) => {
 
 }
 
-exports.updateBarcodePath = (req,res) => {
+exports.updateBarcodePath = (req, res) => {
     const bookId = req.body.bookId;
     const barcodePath = req.body.barcodePath;
-    BookDetailRepository.updateBarcodePath(bookId,barcodePath);
+    BookDetailRepository.updateBarcodePath(bookId, barcodePath);
 }
 
 exports.deleteBook = async (req, res) => {
